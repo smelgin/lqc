@@ -1,0 +1,12 @@
+# Mark binary formats explicitly so Git never applies EOL conversion to them.
+# With core.autocrlf=true (the Windows default), anything Git misclassifies as
+# text gets its LFs rewritten to CRLFs on checkout, which corrupts the file.
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.zip binary
+*.docx binary
+*.xlsx binary
