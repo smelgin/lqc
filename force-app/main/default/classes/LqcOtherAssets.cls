@@ -1,8 +1,15 @@
 /**
- * PLACEHOLDER prefill provider for the "Other Assets" LQC tab.
- * Replace the stub rows with the real data source (SOQL / callout) when available.
+ * @description PLACEHOLDER prefill provider for the "Other Assets" LQC tab. Replace the stub
+ * rows with the real data source (SOQL / callout) when available.
+ * @author Ernesto S Melgin
  */
 public with sharing class LqcOtherAssets implements ILqcPrefill {
+  /**
+   * @description Returns hardcoded placeholder rows until a real "other asset" data source
+   * is wired up.
+   * @param recordId Id of the record the Liquidity Calculator is placed on (the Case).
+   * @return Stub rows for the "Other Assets" tab.
+   */
   public List<Map<String, Object>> refresh(Id recordId) {
     // TODO: query the real "other asset" records related to the Case.
     List<Map<String, Object>> rows = new List<Map<String, Object>>();

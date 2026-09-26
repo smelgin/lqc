@@ -1,3 +1,8 @@
+/**
+ * @description Unit tests for LqcController and its collaborators (LqcEstateCaseStorage,
+ * LqcFscService, and the ILqcPrefill providers).
+ * @author Ernesto S Melgin
+ */
 @IsTest
 private class LqcControllerTest {
   private static Case makeCase() {

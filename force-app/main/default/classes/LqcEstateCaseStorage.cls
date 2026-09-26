@@ -1,11 +1,12 @@
 /**
- * Default LQC storage strategy: keeps the payload in Estate_Case__c.LQC_Result__c
- * on the Estate Case related to the Case the component sits on.
+ * @description Default LQC storage strategy: keeps the payload in
+ * Estate_Case__c.LQC_Result__c on the Estate Case related to the Case the component sits on.
  *
- * The Case lookup on Estate_Case__c is discovered from the schema (preferring a
- * field literally named Case__c, otherwise the single field that references
- * Case), so this class does not need to be edited if the lookup is named
- * differently. Saving creates the Estate Case when none exists yet.
+ * The Case lookup on Estate_Case__c is discovered from the schema (preferring a field
+ * literally named Case__c, otherwise the single field that references Case), so this class
+ * does not need to be edited if the lookup is named differently. Saving creates the Estate
+ * Case when none exists yet.
+ * @author Ernesto S Melgin
  */
 public with sharing class LqcEstateCaseStorage implements ILqcStorage {
   @TestVisible
@@ -13,11 +14,22 @@ public with sharing class LqcEstateCaseStorage implements ILqcStorage {
 
   private static String cachedLookup;
 
+  /**
+   * @description Returns the LQC payload from the Estate Case related to the given Case.
+   * @param recordId Id of the record the Liquidity Calculator is placed on (the Case).
+   * @return The stored payload, or null when no Estate Case exists yet or it has none.
+   */
   public String load(Id recordId) {
     Estate_Case__c record = findByCase(recordId);
     return record == null ? null : record.LQC_Result__c;
   }
 
+  /**
+   * @description Persists the LQC payload on the Estate Case related to the given Case,
+   * creating the Estate Case when none exists yet.
+   * @param recordId Id of the record the Liquidity Calculator is placed on (the Case).
+   * @param payload Serialized Liquidity Calculator state to persist.
+   */
   public void save(Id recordId, String payload) {
     Estate_Case__c record = findByCase(recordId);
     if (record == null) {
@@ -40,7 +52,8 @@ public with sharing class LqcEstateCaseStorage implements ILqcStorage {
   }
 
   /**
-   * API name of the Estate_Case__c field that looks up to Case.
+   * @description API name of the Estate_Case__c field that looks up to Case.
+   * @return The field's API name, cached after the first discovery.
    */
   @TestVisible
   private static String caseLookup() {
@@ -51,8 +64,11 @@ public with sharing class LqcEstateCaseStorage implements ILqcStorage {
   }
 
   /**
-   * Discovery itself, parameterised by the preferred field name so tests can
+   * @description Discovery itself, parameterised by the preferred field name so tests can
    * exercise the fallback scan without depending on how the org named it.
+   * @param preferredName API name to try first (e.g. "Case__c") before scanning every field.
+   * @return API name of the first Estate_Case__c field found that references Case.
+   * @throws AuraHandledException When Estate_Case__c has no field referencing Case.
    */
   @TestVisible
   private static String discoverCaseLookup(String preferredName) {
@@ -74,6 +90,11 @@ public with sharing class LqcEstateCaseStorage implements ILqcStorage {
     );
   }
 
+  /**
+   * @description Checks whether a field is a reference to Case.
+   * @param field Field describe to inspect.
+   * @return True when the field's type is Reference and Case is one of its targets.
+   */
   @TestVisible
   private static Boolean referencesCase(Schema.SObjectField field) {
     Schema.DescribeFieldResult describe = field.getDescribe();

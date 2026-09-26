@@ -50,6 +50,15 @@ export default class LqcReport extends LightningElement {
       .filter((section) => section !== null);
   }
 
+  /**
+   * Builds one report section for a data tab: its rows summed under the tab's subtotal
+   * column, grouped by the tab's groupBy column when configured, otherwise a single
+   * "Total" line.
+   * @param {Object} tab One entry of tabs[] from the JSON config.
+   * @param {Intl.NumberFormat} formatter Formatter used for the section's displayed amounts.
+   * @returns {{key: string, title: string, lines: Array, total: number}|null} The section,
+   * or null when the tab has no number column marked subtotal:true.
+   */
   buildSection(tab, formatter) {
     const columns = tab.columns || [];
     const subtotalCol = columns.find(

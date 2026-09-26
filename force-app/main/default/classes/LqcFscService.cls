@@ -1,8 +1,8 @@
 /**
- * Shared FSC (Financial Services Cloud) data access for the LQC prefill
- * providers, built on the STANDARD (core) FSC data model introduced in API
- * v61.0 - FinancialAccount / FinancialAccountParty / FinancialAccountBalance -
- * not the FinServ__* managed-package objects.
+ * @description Shared FSC (Financial Services Cloud) data access for the LQC prefill
+ * providers, built on the STANDARD (core) FSC data model introduced in API v61.0 -
+ * FinancialAccount / FinancialAccountParty / FinancialAccountBalance - not the FinServ__*
+ * managed-package objects.
  *
  * Model notes:
  *  - The Deceased is the Case's standard Account (Case.AccountId).
@@ -39,6 +39,7 @@
  *    whose save() should register records with fflib_ISObjectUnitOfWork and
  *    let the service layer commitWork() once per transaction.
  * ---------------------------------------------------------------------------
+ * @author Ernesto S Melgin
  */
 public with sharing class LqcFscService {
   @TestVisible
@@ -49,8 +50,11 @@ public with sharing class LqcFscService {
   public static final String BALANCE_CURRENT_POSTED = 'Current Posted Balance';
 
   /**
-   * Returns the Account of the deceased person for this Case
-   * (the standard Case.AccountId lookup).
+   * @description Returns the Account of the deceased person for this Case (the standard
+   * Case.AccountId lookup).
+   * @param caseId Id of the Case to resolve the Deceased Account for.
+   * @return Id of the deceased's Account.
+   * @throws AuraHandledException When the Case has no Account (the Deceased).
    */
   public static Id deceasedAccountId(Id caseId) {
     List<Case> cases = [
@@ -71,9 +75,12 @@ public with sharing class LqcFscService {
   }
 
   /**
-   * Financial Accounts the deceased actively owns (sole or joint - both are
-   * Owner-role FinancialAccountParty rows), restricted to the given
-   * FinancialAccount.Type values.
+   * @description Financial Accounts the deceased actively owns (sole or joint - both are
+   * Owner-role FinancialAccountParty rows), restricted to the given FinancialAccount.Type
+   * values.
+   * @param deceasedId Id of the deceased's Account.
+   * @param accountTypes FinancialAccount.Type values to include.
+   * @return Matching FinancialAccount records, ordered by Name.
    */
   public static List<FinancialAccount> financialAccountsForDeceased(
     Id deceasedId,
@@ -122,14 +129,14 @@ public with sharing class LqcFscService {
   }
 
   /**
-   * Latest balance Amount per FinancialAccountBalance.Type for each account:
-   * accountId -> (balance type -> amount). Ordered ascending by
-   * BalanceAsOfDate so the newest row overwrites older ones.
+   * @description Latest balance Amount per FinancialAccountBalance.Type for each account.
+   * Ordered ascending by BalanceAsOfDate so the newest row overwrites older ones.
    *
-   * NOTE: FinancialAccountBalance fields (Amount, Type, FinancialAccountId)
-   * are read-only in the API - these rows are written by the FSC
-   * integration/Data Cloud pipeline, never by Apex. That also means Apex
-   * tests cannot seed them; test balanceFor() directly instead.
+   * NOTE: FinancialAccountBalance fields (Amount, Type, FinancialAccountId) are read-only in
+   * the API - these rows are written by the FSC integration/Data Cloud pipeline, never by
+   * Apex. That also means Apex tests cannot seed them; test balanceFor() directly instead.
+   * @param financialAccountIds FinancialAccount Ids to fetch balances for.
+   * @return Map of FinancialAccount Id to a map of balance type to latest amount.
    */
   public static Map<Id, Map<String, Decimal>> balancesByAccount(
     Set<Id> financialAccountIds
@@ -156,8 +163,12 @@ public with sharing class LqcFscService {
   }
 
   /**
-   * Balance for display: preferred type first, falling back through the
+   * @description Balance for display: preferred type first, falling back through the
    * remaining types, then null when the account has no balance rows yet.
+   * @param balances Balances by account and type, as returned by balancesByAccount.
+   * @param financialAccountId FinancialAccount Id to look up.
+   * @param typesByPreference Balance types to try, in preference order.
+   * @return The first available amount by preference, or null when none is available.
    */
   public static Decimal balanceFor(
     Map<Id, Map<String, Decimal>> balances,
@@ -177,8 +188,10 @@ public with sharing class LqcFscService {
   }
 
   /**
-   * Account number for display: the FSC account number, falling back to the
+   * @description Account number for display: the FSC account number, falling back to the
    * record Name when the number was not captured.
+   * @param account FinancialAccount to derive the display number for.
+   * @return The FinancialAccountNumber, or the Name when blank.
    */
   public static String displayNumber(FinancialAccount account) {
     return String.isBlank(account.FinancialAccountNumber)
