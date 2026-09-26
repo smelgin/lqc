@@ -1,13 +1,13 @@
 /**
- * Prefill provider for the "Debit Accounts" LQC tab, backed by the STANDARD
- * FSC data model: FinancialAccount records the Deceased (Case.AccountId)
- * actively owns through FinancialAccountParty (Role = 'Owner'), with amounts
- * taken from the latest FinancialAccountBalance rows. See LqcFscService for
- * the ownership/balance model and the FFLIB adoption notes (selector
- * extraction, Application factory, ApexMocks).
+ * @description Prefill provider for the "Debit Accounts" LQC tab, backed by the STANDARD
+ * FSC data model: FinancialAccount records the Deceased (Case.AccountId) actively owns
+ * through FinancialAccountParty (Role = 'Owner'), with amounts taken from the latest
+ * FinancialAccountBalance rows. See LqcFscService for the ownership/balance model and the
+ * FFLIB adoption notes (selector extraction, Application factory, ApexMocks).
  *
- * "Debit" = asset-side account types. Align ACCOUNT_TYPES with the
- * FinancialAccount.Type picklist values configured in your org.
+ * "Debit" = asset-side account types. Align ACCOUNT_TYPES with the FinancialAccount.Type
+ * picklist values configured in your org.
+ * @author Ernesto S Melgin
  */
 public with sharing class LqcDebitAccounts implements ILqcPrefill {
   @TestVisible
@@ -17,6 +17,13 @@ public with sharing class LqcDebitAccounts implements ILqcPrefill {
     'Investment'
   };
 
+  /**
+   * @description Builds one row per asset FinancialAccount the deceased actively owns, with
+   * the available and total balances resolved through LqcFscService.
+   * @param recordId Id of the record the Liquidity Calculator is placed on (the Case).
+   * @return List of rows keyed by the "Debit Accounts" tab's column keys.
+   * @throws AuraHandledException When the Case has no Account (the Deceased).
+   */
   public List<Map<String, Object>> refresh(Id recordId) {
     Id deceasedId = LqcFscService.deceasedAccountId(recordId);
     List<FinancialAccount> accounts = LqcFscService.financialAccountsForDeceased(

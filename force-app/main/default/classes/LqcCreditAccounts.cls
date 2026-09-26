@@ -1,14 +1,14 @@
 /**
- * Prefill provider for the "Credit Accounts" LQC tab, backed by the STANDARD
- * FSC data model: liability-side FinancialAccount records the Deceased
- * (Case.AccountId) actively owns through FinancialAccountParty
- * (Role = 'Owner'). See LqcFscService for the ownership/balance model and the
- * FFLIB adoption notes (selector extraction, Application factory, ApexMocks).
+ * @description Prefill provider for the "Credit Accounts" LQC tab, backed by the STANDARD
+ * FSC data model: liability-side FinancialAccount records the Deceased (Case.AccountId)
+ * actively owns through FinancialAccountParty (Role = 'Owner'). See LqcFscService for the
+ * ownership/balance model and the FFLIB adoption notes (selector extraction, Application
+ * factory, ApexMocks).
  *
- * "Credit" = liability account types. Align ACCOUNT_TYPES with the
- * FinancialAccount.Type picklist values configured in your org ('Automotive
- * Loan' / 'Automotive Lease' are the two values guaranteed by the core
- * picklist; the banking values come with FSC setup).
+ * "Credit" = liability account types. Align ACCOUNT_TYPES with the FinancialAccount.Type
+ * picklist values configured in your org ('Automotive Loan' / 'Automotive Lease' are the two
+ * values guaranteed by the core picklist; the banking values come with FSC setup).
+ * @author Ernesto S Melgin
  */
 public with sharing class LqcCreditAccounts implements ILqcPrefill {
   @TestVisible
@@ -20,6 +20,13 @@ public with sharing class LqcCreditAccounts implements ILqcPrefill {
     'Automotive Lease'
   };
 
+  /**
+   * @description Builds one row per liability FinancialAccount the deceased owns, sole or
+   * joint, with the outstanding balance sourced per the priority documented inline.
+   * @param recordId Id of the record the Liquidity Calculator is placed on (the Case).
+   * @return List of rows keyed by the "Credit Accounts" tab's column keys.
+   * @throws AuraHandledException When the Case has no Account (the Deceased).
+   */
   public List<Map<String, Object>> refresh(Id recordId) {
     Id deceasedId = LqcFscService.deceasedAccountId(recordId);
     List<FinancialAccount> accounts = LqcFscService.financialAccountsForDeceased(

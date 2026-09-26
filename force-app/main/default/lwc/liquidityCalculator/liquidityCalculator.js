@@ -16,6 +16,7 @@ const PAYLOAD_VERSION = 1;
  * read-only on subsequent loads.
  */
 export default class LiquidityCalculator extends LightningElement {
+  /** Id of the record the component is placed on (the Case). */
   @api recordId;
   /** Optional: DeveloperName of the Custom_Configuration__mdt record to use. */
   @api configName;
@@ -33,6 +34,11 @@ export default class LiquidityCalculator extends LightningElement {
     this.load();
   }
 
+  /**
+   * Loads the tab configuration and any previously saved payload in parallel, then builds
+   * the tabs array the template renders from.
+   * @returns {Promise<void>} Resolves once loading finishes, banner shown on failure.
+   */
   async load() {
     this.isLoading = true;
     try {
@@ -100,6 +106,11 @@ export default class LiquidityCalculator extends LightningElement {
 
   /* ------------------------------------------------- save / publish */
 
+  /**
+   * Serializes the current tab rows into the persisted payload shape.
+   * @param {boolean} published Whether the payload should be marked published (locks grids).
+   * @returns {string} The JSON payload to send to saveResult.
+   */
   buildPayload(published) {
     return JSON.stringify({
       version: PAYLOAD_VERSION,
@@ -109,6 +120,12 @@ export default class LiquidityCalculator extends LightningElement {
     });
   }
 
+  /**
+   * Saves the current state through saveResult and updates the published flag and banner.
+   * @param {boolean} published Whether to persist as published (locks grids read-only).
+   * @param {string} successMessage Banner message to show once the save succeeds.
+   * @returns {Promise<void>} Resolves once the save attempt finishes.
+   */
   async persist(published, successMessage) {
     this.isSaving = true;
     this.banner = undefined;

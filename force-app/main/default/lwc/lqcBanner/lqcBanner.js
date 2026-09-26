@@ -5,8 +5,9 @@ import { LightningElement, api } from "lwc";
  * above each editable grid, matching the WinDeed-extract style bar.
  */
 export default class LqcBanner extends LightningElement {
-  /** 'success' | 'error' | 'info' */
+  /** @type {'success'|'error'|'info'} Visual style and icon of the banner. */
   @api variant = "info";
+  /** Message text to display; the banner renders nothing while this is falsy. */
   @api message;
 
   get hasMessage() {

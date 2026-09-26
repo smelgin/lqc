@@ -1,8 +1,15 @@
 /**
- * PLACEHOLDER prefill provider for the "Fixed Properties" LQC tab (WinDeed).
+ * @description PLACEHOLDER prefill provider for the "Fixed Properties" LQC tab (WinDeed).
  * Replace the stub rows with the real WinDeed extract when available.
+ * @author Ernesto S Melgin
  */
 public with sharing class LqcFixedProperties implements ILqcPrefill {
+  /**
+   * @description Returns hardcoded placeholder rows until the WinDeed extract integration
+   * is built.
+   * @param recordId Id of the record the Liquidity Calculator is placed on (the Case).
+   * @return Stub rows for the "Fixed Properties" tab.
+   */
   public List<Map<String, Object>> refresh(Id recordId) {
     // TODO v2: call the WinDeed extract service for the Case.
     List<Map<String, Object>> rows = new List<Map<String, Object>>();
