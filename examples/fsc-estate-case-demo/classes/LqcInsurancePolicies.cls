@@ -1,4 +1,9 @@
 /**
+ * REFERENCE IMPLEMENTATION - lives in /examples, not inside the LQC managed
+ * package. Deploy it separately, alongside the installed package, as a
+ * worked example of the packaged ILqcPrefill contract. Copy and adapt it;
+ * do not expect it to ship with the package itself.
+ *
  * Prefill provider for the "Insurance Policies" LQC tab, backed by the FSC
  * Insurance data model (standard objects): InsurancePolicy records where the
  * Deceased (the Case's standard Account, Case.AccountId) is the Named Insured,
@@ -12,6 +17,8 @@
  * ILqcStorage, which should use fflib_ISObjectUnitOfWork when FFLIB lands.
  * ---------------------------------------------------------------------------
  */
+// Once the core package is installed under a namespace, this becomes
+// "implements yourNamespace.ILqcPrefill".
 public with sharing class LqcInsurancePolicies implements ILqcPrefill {
   @TestVisible
   private static final String BENEFICIARY_ROLE = 'Beneficiary';

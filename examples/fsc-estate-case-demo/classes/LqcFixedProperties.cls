@@ -1,7 +1,13 @@
 /**
+ * REFERENCE IMPLEMENTATION - lives in /examples, not inside the LQC managed
+ * package. Deploy it separately, alongside the installed package, as a
+ * worked example of the packaged ILqcPrefill contract.
+ *
  * PLACEHOLDER prefill provider for the "Fixed Properties" LQC tab (WinDeed).
  * Replace the stub rows with the real WinDeed extract when available.
  */
+// Once the core package is installed under a namespace, this becomes
+// "implements yourNamespace.ILqcPrefill".
 public with sharing class LqcFixedProperties implements ILqcPrefill {
   public List<Map<String, Object>> refresh(Id recordId) {
     // TODO v2: call the WinDeed extract service for the Case.

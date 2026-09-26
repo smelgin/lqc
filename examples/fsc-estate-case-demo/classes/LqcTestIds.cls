@@ -1,5 +1,7 @@
 /**
- * Generates syntactically valid, unique SObject Ids without DML.
+ * Test helper for this examples bundle - lives in /examples, not inside the
+ * LQC managed package. Generates syntactically valid, unique SObject Ids
+ * without DML.
  *
  * Needed because parts of the FSC model are read-only in the API
  * (FinancialAccountBalance) and cannot be inserted from Apex tests, so the

@@ -1,12 +1,21 @@
 /**
- * Default LQC storage strategy: keeps the payload in Estate_Case__c.LQC_Result__c
- * on the Estate Case related to the Case the component sits on.
+ * REFERENCE IMPLEMENTATION - lives in /examples, not inside the LQC managed
+ * package, together with the Estate_Case__c object it reads and writes.
+ * Deploy both separately, alongside the installed package, as a worked
+ * example of the packaged ILqcStorage contract. The package itself ships no
+ * default storage destination - every install picks or writes its own.
+ *
+ * Default-flavored LQC storage strategy: keeps the payload in
+ * Estate_Case__c.LQC_Result__c on the Estate Case related to the Case the
+ * component sits on.
  *
  * The Case lookup on Estate_Case__c is discovered from the schema (preferring a
  * field literally named Case__c, otherwise the single field that references
  * Case), so this class does not need to be edited if the lookup is named
  * differently. Saving creates the Estate Case when none exists yet.
  */
+// Once the core package is installed under a namespace, this becomes
+// "implements yourNamespace.ILqcStorage".
 public with sharing class LqcEstateCaseStorage implements ILqcStorage {
   @TestVisible
   private static final String PREFERRED_LOOKUP = 'Case__c';
