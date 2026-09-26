@@ -11,6 +11,40 @@
  */
 @IsTest
 private class LqcFscExampleProvidersTest {
+  /**
+   * LqcEstateCaseStorage reads/writes Estate_Case__c under USER_MODE, but
+   * deploying a custom field via the Metadata API grants no profile access to
+   * it - not even to System Administrator. Assign the bundled permission set
+   * so the running user can see Case__c/LQC_Result__c, the same way a real
+   * org would need to for the Liquidity Calculator's actual users. Skipped
+   * when already assigned (e.g. a real user who followed the README) since
+   * PermissionSetAssignment is setup data - visible, and enforced as unique,
+   * in every test's transaction regardless of @testSetup.
+   */
+  @TestSetup
+  static void setup() {
+    Id userId = UserInfo.getUserId();
+    PermissionSet ps = [
+      SELECT Id
+      FROM PermissionSet
+      WHERE Name = 'LQC_Estate_Case_Access'
+      LIMIT 1
+    ];
+    Boolean alreadyAssigned = ![
+        SELECT Id
+        FROM PermissionSetAssignment
+        WHERE AssigneeId = :userId AND PermissionSetId = :ps.Id
+        LIMIT 1
+      ]
+      .isEmpty();
+    if (!alreadyAssigned) {
+      insert new PermissionSetAssignment(
+        AssigneeId = userId,
+        PermissionSetId = ps.Id
+      );
+    }
+  }
+
   private static Case makeCase() {
     Case c = new Case(
       Subject = 'LQC Test Case',

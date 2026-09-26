@@ -13,16 +13,17 @@ data tabs shipped in the package's default `DE_LQC` custom metadata record
 against Financial Services Cloud standard objects, plus a default storage
 destination.
 
-| Component                                          | Implements    | Notes                                                              |
-| --------------------------------------------------- | ------------- | ------------------------------------------------------------------- |
-| `LqcFscService.cls`                                 | —             | Shared FSC query/ownership helper the providers below reuse.        |
-| `LqcDebitAccounts.cls`, `LqcCreditAccounts.cls`      | `ILqcPrefill` | Query `FinancialAccount` via `FinancialAccountParty` ownership.      |
-| `LqcInsurancePolicies.cls`                          | `ILqcPrefill` | Queries `InsurancePolicy` / `InsurancePolicyParticipant`.            |
-| `LqcFixedProperties.cls`, `LqcShares.cls`, `LqcOtherAssets.cls` | `ILqcPrefill` | Static stub rows — no real data source wired up yet.        |
-| `LqcEstateCaseStorage.cls`                          | `ILqcStorage` | Default-flavored strategy: stores the payload on `Estate_Case__c`.  |
-| `LqcTestIds.cls`                                    | —             | Test-only helper: synthesizes Ids for FSC objects that Apex tests can't insert (e.g. `FinancialAccountBalance`, read-only in the API). |
-| `LqcFscExampleProvidersTest.cls`                    | —             | Tests for everything above, including a round-trip proving the package's shipped default config resolves once this bundle is deployed. |
-| `objects/Estate_Case__c/`                           | —             | Minimal custom object `LqcEstateCaseStorage` reads/writes.          |
+| Component                                                       | Implements    | Notes                                                                                                                                  |
+| --------------------------------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `LqcFscService.cls`                                             | —             | Shared FSC query/ownership helper the providers below reuse.                                                                           |
+| `LqcDebitAccounts.cls`, `LqcCreditAccounts.cls`                 | `ILqcPrefill` | Query `FinancialAccount` via `FinancialAccountParty` ownership.                                                                        |
+| `LqcInsurancePolicies.cls`                                      | `ILqcPrefill` | Queries `InsurancePolicy` / `InsurancePolicyParticipant`.                                                                              |
+| `LqcFixedProperties.cls`, `LqcShares.cls`, `LqcOtherAssets.cls` | `ILqcPrefill` | Static stub rows — no real data source wired up yet.                                                                                   |
+| `LqcEstateCaseStorage.cls`                                      | `ILqcStorage` | Default-flavored strategy: stores the payload on `Estate_Case__c`.                                                                     |
+| `LqcTestIds.cls`                                                | —             | Test-only helper: synthesizes Ids for FSC objects that Apex tests can't insert (e.g. `FinancialAccountBalance`, read-only in the API). |
+| `LqcFscExampleProvidersTest.cls`                                | —             | Tests for everything above, including a round-trip proving the package's shipped default config resolves once this bundle is deployed. |
+| `objects/Estate_Case__c/`                                       | —             | Minimal custom object `LqcEstateCaseStorage` reads/writes.                                                                             |
+| `permissionsets/LQC_Estate_Case_Access.permissionset-meta.xml`  | —             | Object/field access to `Estate_Case__c` that `LqcEstateCaseStorage` needs under `USER_MODE`.                                           |
 
 ## Deploying it
 
@@ -34,6 +35,19 @@ sf project deploy start --source-dir examples/fsc-estate-case-demo --target-org 
 v61.0+ standard objects — `FinancialAccount`, `FinancialAccountParty`,
 `FinancialAccountBalance`, `InsurancePolicy`, `InsurancePolicyParticipant`).
 The package itself has no such dependency; this examples bundle does.
+
+**Assign the permission set to real users.** Deploying a custom field via the
+Metadata API grants no profile access to it — not even to System
+Administrator — so `LqcEstateCaseStorage`'s `USER_MODE` queries against
+`Estate_Case__c.Case__c` / `LQC_Result__c` fail with a misleading "No such
+column" error until `LQC_Estate_Case_Access` is assigned:
+
+```bash
+sf org assign permset --name LQC_Estate_Case_Access --target-org <alias>
+```
+
+`LqcFscExampleProvidersTest` assigns it to the running user itself in
+`@TestSetup`, so the test suite doesn't need this step.
 
 **If the org already has its own `Estate_Case__c`**, skip
 `objects/Estate_Case__c/` and point `LqcEstateCaseStorage` (or your own
