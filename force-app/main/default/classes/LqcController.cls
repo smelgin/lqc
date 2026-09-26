@@ -121,14 +121,17 @@ public with sharing class LqcController {
 
   /**
    * @description Instantiates and validates a storage strategy by class name.
-   * @param className Fully qualified Apex class name expected to implement ILqcStorage.
+   * @param className Apex class name expected to implement ILqcStorage. Resolved against the
+   * empty (local) namespace, since the class named by admin-controlled config lives outside
+   * this package - the single-arg Type.forName would otherwise scope the lookup to this
+   * package's own namespace once it ships under one.
    * @return A new instance of the named class, cast to ILqcStorage.
    * @throws AuraHandledException When the class cannot be found or does not implement
    * ILqcStorage.
    */
   @TestVisible
   private static ILqcStorage storageInstance(String className) {
-    Type storageType = Type.forName(className);
+    Type storageType = Type.forName('', className);
     if (storageType == null) {
       throw new AuraHandledException(
         'Storage class "' + className + '" was not found.'
@@ -163,7 +166,8 @@ public with sharing class LqcController {
   /**
    * @description Dynamically instantiates the configured prefill class and returns its
    * rows serialized as JSON (a List<Map<String, Object>>).
-   * @param className Fully qualified Apex class name expected to implement ILqcPrefill.
+   * @param className Apex class name expected to implement ILqcPrefill. Resolved against the
+   * empty (local) namespace - see storageInstance() for why.
    * @param recordId Id of the record the Liquidity Calculator is placed on (the Case).
    * @return The prefill rows serialized as a JSON array of objects.
    * @throws AuraHandledException When className is blank, the class cannot be found, does
@@ -176,7 +180,7 @@ public with sharing class LqcController {
         'No refresh class is configured for this tab.'
       );
     }
-    Type prefillType = Type.forName(className);
+    Type prefillType = Type.forName('', className);
     if (prefillType == null) {
       throw new AuraHandledException(
         'Refresh class "' + className + '" was not found.'
