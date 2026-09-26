@@ -1,3 +1,11 @@
+/**
+ * @description Unit tests for LqcController itself, using in-package test doubles for
+ * ILqcStorage/ILqcPrefill. The reference implementations that back the shipped default
+ * config (LqcEstateCaseStorage, LqcFscService, the ILqcPrefill providers) live outside this
+ * package in examples/fsc-estate-case-demo and are covered by
+ * LqcFscExampleProvidersTest there.
+ * @author Ernesto S Melgin
+ */
 @IsTest
 private class LqcControllerTest {
   private static Case makeCase() {

@@ -4,18 +4,19 @@
  * worked example of the packaged ILqcPrefill contract. Copy and adapt it;
  * do not expect it to ship with the package itself.
  *
- * Prefill provider for the "Insurance Policies" LQC tab, backed by the FSC
- * Insurance data model (standard objects): InsurancePolicy records where the
- * Deceased (the Case's standard Account, Case.AccountId) is the Named Insured,
- * with the beneficiary resolved from InsurancePolicyParticipant.
+ * @description Prefill provider for the "Insurance Policies" LQC tab, backed by the FSC
+ * Insurance data model (standard objects): InsurancePolicy records where the Deceased (the
+ * Case's standard Account, Case.AccountId) is the Named Insured, with the beneficiary
+ * resolved from InsurancePolicyParticipant.
  *
  * ------------------------------------------------------------------ FFLIB --
  * On FFLIB adoption: move both queries into an InsurancePoliciesSelector /
  * InsurancePolicyParticipantsSelector (fflib_SObjectSelector), resolved via
- * Application.Selector so tests stub them with fflib_ApexMocks; this class
- * keeps only the row-mapping. No DML here - persistence goes through
- * ILqcStorage, which should use fflib_ISObjectUnitOfWork when FFLIB lands.
+ * Application.Selector so tests stub them with fflib_ApexMocks; this class keeps only the
+ * row-mapping. No DML here - persistence goes through ILqcStorage, which should use
+ * fflib_ISObjectUnitOfWork when FFLIB lands.
  * ---------------------------------------------------------------------------
+ * @author Ernesto S Melgin
  */
 // Once the core package is installed under a namespace, this becomes
 // "implements yourNamespace.ILqcPrefill".
@@ -23,6 +24,13 @@ public with sharing class LqcInsurancePolicies implements ILqcPrefill {
   @TestVisible
   private static final String BENEFICIARY_ROLE = 'Beneficiary';
 
+  /**
+   * @description Builds one row per InsurancePolicy where the deceased is the Named Insured,
+   * with beneficiaries joined into a single display string.
+   * @param recordId Id of the record the Liquidity Calculator is placed on (the Case).
+   * @return List of rows keyed by the "Insurance Policies" tab's column keys.
+   * @throws AuraHandledException When the Case has no Account (the Deceased).
+   */
   public List<Map<String, Object>> refresh(Id recordId) {
     Id deceasedId = LqcFscService.deceasedAccountId(recordId);
 
@@ -58,8 +66,10 @@ public with sharing class LqcInsurancePolicies implements ILqcPrefill {
   }
 
   /**
-   * First active Beneficiary participant name per policy. Multiple
-   * beneficiaries are joined with ", ".
+   * @description Beneficiary participant names per policy. Multiple beneficiaries on the
+   * same policy are joined with ", ".
+   * @param policies Policies to resolve beneficiaries for.
+   * @return Map of InsurancePolicy Id to its joined beneficiary display name.
    */
   private static Map<Id, String> beneficiaryNames(
     List<InsurancePolicy> policies

@@ -13,14 +13,15 @@ const ROW_ACTION_DELETE = "delete";
 /**
  * Reusable editable grid for one LQC tab.
  *
- * Inputs:  recordId, config (one entry of tabs[] from Custom_Configuration__mdt),
- *          initialRows (from the saved payload), readOnly (published state).
- * Output:  'rowschange' event with { name, rows } on every mutation, so the
- *          parent always holds the latest state for Save / Publish.
+ * Fires a 'rowschange' event with { name, rows } on every mutation, so the parent always
+ * holds the latest state for Save / Publish.
  */
 export default class LqcGrid extends LightningElement {
+  /** Id of the record the Liquidity Calculator is placed on (the Case). */
   @api recordId;
+  /** One entry of tabs[] from the Custom_Configuration__mdt JSON config. */
   @api config;
+  /** Whether the grid is locked read-only (true once the payload is published). */
   @api readOnly = false;
 
   @track rows = [];
@@ -34,6 +35,11 @@ export default class LqcGrid extends LightningElement {
 
   _initialized = false;
 
+  /**
+   * Rows from the saved payload. Only the first assignment seeds `rows`; later
+   * reassignments (e.g. the parent re-rendering) are ignored so in-progress edits and
+   * refreshed/added rows are never clobbered.
+   */
   @api
   get initialRows() {
     return this._initialRows;
@@ -169,6 +175,11 @@ export default class LqcGrid extends LightningElement {
 
   /* ---------------------------------------------------------- refresh */
 
+  /**
+   * Re-fetches prefill rows from the tab's configured refresh class and replaces the
+   * previous prefilled rows, preserving manually added rows.
+   * @returns {Promise<void>} Resolves once the refresh attempt finishes.
+   */
   async handleRefresh() {
     this.isLoading = true;
     this.banner = undefined;
@@ -192,6 +203,14 @@ export default class LqcGrid extends LightningElement {
     }
   }
 
+  /**
+   * Normalizes a raw prefill row into datatable shape: assigns a stable row id and, for
+   * every textLink column, derives the "<columnKey>Url" the datatable's url type needs from
+   * the "<columnKey>RecordId" the Apex provider returned.
+   * @param {Object} raw Row returned by the Apex refresh provider.
+   * @param {number} index Row position, used to build a unique id.
+   * @returns {Object} The row augmented with id, isManual, editable, and link URLs.
+   */
   toPrefilledRow(raw, index) {
     const row = {
       ...raw,
@@ -210,6 +229,10 @@ export default class LqcGrid extends LightningElement {
 
   /* ---------------------------------------------------------- add row */
 
+  /**
+   * Builds the "Add row" modal's input definitions from the tab's column config (skipping
+   * textLink columns, which are never manually entered) and opens the modal.
+   */
   handleAdd() {
     this.modalInputs = (this.config.columns || [])
       .filter((col) => parseColumnType(col.type).base !== "textLink")
@@ -254,6 +277,10 @@ export default class LqcGrid extends LightningElement {
     this.showAddModal = false;
   }
 
+  /**
+   * Validates the "Add row" modal's inputs and, when valid, appends a new manual row built
+   * from their values and closes the modal.
+   */
   handleModalSave() {
     const inputs = [...this.template.querySelectorAll("[data-key]")];
     const allValid = inputs.reduce(
@@ -281,6 +308,11 @@ export default class LqcGrid extends LightningElement {
 
   /* ------------------------------------------------- edit / delete */
 
+  /**
+   * Merges inline-edited draft values into their rows. Only manually added rows accept
+   * edits; drafts against prefilled rows are ignored.
+   * @param {CustomEvent} event lightning-datatable 'cellchange'-save event.
+   */
   handleCellSave(event) {
     const drafts = event.detail.draftValues || [];
     const byId = new Map(drafts.map((d) => [d.id, d]));
@@ -304,6 +336,7 @@ export default class LqcGrid extends LightningElement {
     this.emitRows();
   }
 
+  /** Resolves the configured column type (e.g. 'number') for a datatable field name. */
   columnTypeForField(field) {
     const col = (this.config.columns || []).find(
       (c) => fieldKey(c.name) === field

@@ -3,12 +3,19 @@
  * package. Deploy it separately, alongside the installed package, as a
  * worked example of the packaged ILqcPrefill contract.
  *
- * PLACEHOLDER prefill provider for the "Shares" LQC tab.
- * Replace the stub rows with the real data source (SOQL / callout) when available.
+ * @description PLACEHOLDER prefill provider for the "Shares" LQC tab. Replace the stub rows
+ * with the real data source (SOQL / callout) when available.
+ * @author Ernesto S Melgin
  */
 // Once the core package is installed under a namespace, this becomes
 // "implements yourNamespace.ILqcPrefill".
 public with sharing class LqcShares implements ILqcPrefill {
+  /**
+   * @description Returns hardcoded placeholder rows until a real shareholding data source is
+   * wired up.
+   * @param recordId Id of the record the Liquidity Calculator is placed on (the Case).
+   * @return Stub rows for the "Shares" tab.
+   */
   public List<Map<String, Object>> refresh(Id recordId) {
     // TODO v2: query the real shareholding records related to the Case.
     List<Map<String, Object>> rows = new List<Map<String, Object>>();
