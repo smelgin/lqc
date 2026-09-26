@@ -71,27 +71,22 @@ private class LqcControllerTest {
   }
 
   /**
-   * The shipped DE_LQC config intentionally names storage/refresh classes
-   * (LqcEstateCaseStorage, LqcDebitAccounts, ...) that live in
-   * examples/fsc-estate-case-demo, not in this package. Until that bundle (or
-   * an equivalent of your own) is deployed alongside the package, resolving
-   * the default storage strategy must fail loudly rather than silently doing
-   * nothing - this locks in that intentional behavior.
+   * The shipped DE_LQC config intentionally names a storage class
+   * (lqcEstateCaseStorage) that lives in examples/fsc-estate-case-demo, not
+   * in this package - resolving it requires that bundle (or an equivalent of
+   * your own) deployed alongside the package. This is a template-content
+   * assertion only: it must NOT call storageFor()/Type.forName, because
+   * whether that class actually resolves depends on what else is deployed
+   * in the org running this test, which this package's own suite has no
+   * business asserting on either way.
    */
   @IsTest
-  static void defaultStorageStrategyRequiresTheExampleToBeDeployed() {
-    try {
-      LqcController.storageFor(null);
-      System.assert(
-        false,
-        'Expected AuraHandledException: the example storage class is not part of this package'
-      );
-    } catch (AuraHandledException e) {
-      System.assert(
-        e.getMessage().contains('lqcEstateCaseStorage'),
-        'The error should name the missing example class, got: ' + e.getMessage()
-      );
-    }
+  static void defaultStorageClassNameMatchesTheDocumentedExample() {
+    System.assertEquals(
+      'lqcEstateCaseStorage',
+      LqcController.storageClassName(LqcController.getConfig(null)),
+      'The shipped template should still point at the documented example storage class'
+    );
   }
 
   @IsTest
