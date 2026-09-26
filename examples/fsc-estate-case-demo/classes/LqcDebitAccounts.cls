@@ -14,9 +14,7 @@
  * picklist values configured in your org.
  * @author Ernesto S Melgin
  */
-// Once the core package is installed under a namespace, this becomes
-// "implements yourNamespace.ILqcPrefill".
-public with sharing class LqcDebitAccounts implements ILqcPrefill {
+public with sharing class LqcDebitAccounts implements absa1.ILqcPrefill {
   @TestVisible
   private static final Set<String> ACCOUNT_TYPES = new Set<String>{
     'Checking',

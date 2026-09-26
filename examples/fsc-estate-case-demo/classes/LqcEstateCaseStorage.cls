@@ -14,9 +14,7 @@
  * Case when none exists yet.
  * @author Ernesto S Melgin
  */
-// Once the core package is installed under a namespace, this becomes
-// "implements yourNamespace.ILqcStorage".
-public with sharing class LqcEstateCaseStorage implements ILqcStorage {
+public with sharing class LqcEstateCaseStorage implements absa1.ILqcStorage {
   @TestVisible
   private static final String PREFERRED_LOOKUP = 'Case__c';
 

@@ -7,9 +7,7 @@
  * rows with the real data source (SOQL / callout) when available.
  * @author Ernesto S Melgin
  */
-// Once the core package is installed under a namespace, this becomes
-// "implements yourNamespace.ILqcPrefill".
-public with sharing class LqcOtherAssets implements ILqcPrefill {
+public with sharing class LqcOtherAssets implements absa1.ILqcPrefill {
   /**
    * @description Returns hardcoded placeholder rows until a real "other asset" data source
    * is wired up.

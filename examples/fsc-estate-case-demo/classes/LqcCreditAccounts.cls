@@ -15,9 +15,7 @@
  * values guaranteed by the core picklist; the banking values come with FSC setup).
  * @author Ernesto S Melgin
  */
-// Once the core package is installed under a namespace, this becomes
-// "implements yourNamespace.ILqcPrefill".
-public with sharing class LqcCreditAccounts implements ILqcPrefill {
+public with sharing class LqcCreditAccounts implements absa1.ILqcPrefill {
   @TestVisible
   private static final Set<String> ACCOUNT_TYPES = new Set<String>{
     'Credit Card',

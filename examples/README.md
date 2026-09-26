@@ -65,13 +65,17 @@ classes once you've written them.
 
 ## Adapting this once the package has a namespace
 
-Today this repo has no namespace, so these classes compile as plain,
-unnamespaced Apex — `implements ILqcPrefill` resolves directly. Once the core
-package (`force-app/`) is installed under a namespace, every `implements
-ILqcPrefill` / `implements ILqcStorage` line in this bundle needs to become
-`implements yourNamespace.ILqcPrefill` / `implements yourNamespace.ILqcStorage`
-(each is flagged with a comment above the line). Whether the class name
-strings in the `DE_LQC` JSON also need namespace-qualifying depends on how
-`Type.forName` resolves an unqualified name across that namespace boundary —
-verify that against a real packaging/subscriber org pair before relying on
-it either way.
+`force-app/` is packaged under the `absa1` namespace, so every `implements
+ILqcPrefill` / `implements ILqcStorage` line in this bundle is namespace-
+qualified: `implements absa1.ILqcPrefill` / `implements absa1.ILqcStorage`.
+**This means these classes no longer compile as plain, unpackaged Apex** —
+they only resolve once `absa1.ILqcPrefill` / `absa1.ILqcStorage` actually
+exist in the org, i.e. once the `force-app` package is installed under that
+namespace. If you're adapting this bundle for an unnamespaced or
+differently-namespaced install, update these `implements` lines to match.
+
+The class name _strings_ in the `DE_LQC` JSON config (`lqcEstateCaseStorage`,
+`lqcDebitAccounts`, ...) do **not** need namespace-qualifying: `LqcController`
+resolves them with `Type.forName('', className)`, which explicitly looks in
+the local (subscriber-org) namespace rather than the package's own — exactly
+where these example classes live.

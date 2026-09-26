@@ -7,9 +7,7 @@
  * Replace the stub rows with the real WinDeed extract when available.
  * @author Ernesto S Melgin
  */
-// Once the core package is installed under a namespace, this becomes
-// "implements yourNamespace.ILqcPrefill".
-public with sharing class LqcFixedProperties implements ILqcPrefill {
+public with sharing class LqcFixedProperties implements absa1.ILqcPrefill {
   /**
    * @description Returns hardcoded placeholder rows until the WinDeed extract integration
    * is built.
