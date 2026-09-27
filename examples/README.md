@@ -28,7 +28,19 @@ destination.
 
 ## Deploying it
 
+This bundle's classes `implement absa1.ILqcPrefill` / `absa1.ILqcStorage`, so they only compile
+once the `LQC` package is installed — and the package's post-install script only succeeds if
+`Custom_Configuration__mdt` already exists. Those two facts mean this can't go in as one deploy
+before or after the package; see the [top-level README](../README.md#installing-the-managed-package)
+for the full 4-step sequence. Summarized:
+
 ```bash
+# 1. before installing the package — just the CMDT object
+sf project deploy start --source-dir examples/fsc-estate-case-demo/objects/Custom_Configuration__mdt --target-org <alias>
+
+# 2. sf package install ... (see top-level README)
+
+# 3. after installing the package — everything else in this bundle
 sf project deploy start --source-dir examples/fsc-estate-case-demo --target-org <alias>
 ```
 
