@@ -100,10 +100,54 @@ private class LqcFscExampleProvidersTest {
   }
 
   /**
+   * Custom_Configuration__mdt and its DE_LQC record live in this bundle, not the package
+   * (see LqcController.queryConfigJson) - a real install creates DE_LQC via
+   * LqcPostInstallScript, but for a source deploy like this one it's just part of
+   * examples/fsc-estate-case-demo/customMetadata. Proves the shipped template still points
+   * at the documented example storage class. Parses getConfig()'s JSON directly rather than
+   * calling LqcController.storageClassName(): that method is private to the package, so
+   * unpackaged code in this bundle can't reach it across the package boundary.
+   */
+  @IsTest
+  static void defaultConfigNamesTheDocumentedExampleStorageClass() {
+    Map<String, Object> config = (Map<String, Object>) JSON.deserializeUntyped(
+      LqcController.getConfig(null)
+    );
+    System.assertEquals(
+      'lqcEstateCaseStorage',
+      config.get('storageClass'),
+      'The shipped template should still point at the documented example storage class'
+    );
+  }
+
+  /**
+   * Metadata.Operations.enqueueDeployment (used by enqueueDefaultConfigRecord() when no
+   * DE_LQC record exists yet) is a Metadata API callout, and callouts aren't supported in
+   * Apex tests - so onInstall() can only be exercised here in the "already deployed, skip
+   * creation" branch, which is exactly the state this bundle's source deploy leaves the org
+   * in. The create branch, and LqcUninstallScript.onUninstall() (which would always reach
+   * the same kind of callout here, since this bundle's source deploy always leaves DE_LQC
+   * present), are verified manually against a real install/uninstall instead - see
+   * examples/README.md. A plain SOQL count is used rather than
+   * LqcPostInstallScript.recordExists(), also private to the package.
+   */
+  @IsTest
+  static void postInstallScriptSkipsCreationWhenTheTemplateAlreadyExists() {
+    Test.testInstall(new LqcPostInstallScript(), null);
+    System.assertEquals(
+      1,
+      [
+        SELECT COUNT()
+        FROM Custom_Configuration__mdt
+        WHERE DeveloperName = 'DE_LQC'
+      ],
+      'onInstall() must not duplicate an already-existing DE_LQC record'
+    );
+  }
+
+  /**
    * Proves the shipped DE_LQC template actually works once this examples
-   * bundle is deployed alongside the package - the counterpart to
-   * LqcControllerTest.defaultStorageStrategyRequiresTheExampleToBeDeployed,
-   * which proves it fails loudly without it.
+   * bundle is deployed alongside the package.
    */
   @IsTest
   static void defaultConfigResolvesWhenTheExampleIsDeployed() {

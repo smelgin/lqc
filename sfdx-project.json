@@ -14,6 +14,7 @@
   "sfdcLoginUrl": "https://login.salesforce.com",
   "sourceApiVersion": "66.0",
   "packageAliases": {
-    "LQC": "0HoWs000000GY0vKAG"
+    "LQC": "0HoWs000000GY0vKAG",
+    "LQC@0.1.0-1": "04tWs000000uCEbIAM"
   }
 }

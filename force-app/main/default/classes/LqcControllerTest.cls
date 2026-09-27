@@ -1,9 +1,10 @@
 /**
  * @description Unit tests for LqcController itself, using in-package test doubles for
- * ILqcStorage/ILqcPrefill. The reference implementations that back the shipped default
- * config (LqcEstateCaseStorage, LqcFscService, the ILqcPrefill providers) live outside this
- * package in examples/fsc-estate-case-demo and are covered by
- * LqcFscExampleProvidersTest there.
+ * ILqcStorage/ILqcPrefill/Custom_Configuration__mdt (configOverride). None of those three
+ * are part of this package - the concrete storage/prefill implementations and the CMDT
+ * record they're wired up through both live outside this package in
+ * examples/fsc-estate-case-demo and are covered end to end by LqcFscExampleProvidersTest
+ * there.
  * @author Ernesto S Melgin
  */
 @IsTest
@@ -18,30 +19,44 @@ private class LqcControllerTest {
     return c;
   }
 
+  /**
+   * Custom_Configuration__mdt is not part of this package (see
+   * LqcController.queryConfigJson) - it's created by the post-install script in a real
+   * install, or by hand otherwise. This package's own suite exercises getConfig() through
+   * configOverride instead of depending on a record actually existing; the real, deployed
+   * DE_LQC record is covered end to end by LqcFscExampleProvidersTest in examples/.
+   */
   @IsTest
-  static void getConfigReturnsDefaultJson() {
-    // Custom metadata records are visible in tests without seeAllData.
-    String config = LqcController.getConfig(null);
-    System.assert(
-      String.isNotBlank(config),
-      'Default config JSON should be returned'
-    );
-    Map<String, Object> parsed = (Map<String, Object>) JSON.deserializeUntyped(
-      config
-    );
-    System.assert(
-      parsed.containsKey('tabs'),
-      'Config should contain a tabs array'
-    );
+  static void getConfigReturnsOverriddenJson() {
+    LqcController.configOverride = new Map<String, String>{
+      'DE_LQC' => '{"storageClass":"lqcEstateCaseStorage","tabs":[]}'
+    };
+    try {
+      String config = LqcController.getConfig(null);
+      Map<String, Object> parsed = (Map<String, Object>) JSON.deserializeUntyped(
+        config
+      );
+      System.assert(
+        parsed.containsKey('tabs'),
+        'Config should contain a tabs array'
+      );
+    } finally {
+      LqcController.configOverride = null;
+    }
   }
 
   @IsTest
   static void getConfigThrowsForUnknownName() {
+    LqcController.configOverride = new Map<String, String>{
+      'DE_LQC' => '{"tabs":[]}'
+    };
     try {
       LqcController.getConfig('DoesNotExist');
       System.assert(false, 'Expected AuraHandledException');
     } catch (AuraHandledException e) {
       System.assert(true);
+    } finally {
+      LqcController.configOverride = null;
     }
   }
 
@@ -68,25 +83,6 @@ private class LqcControllerTest {
     } finally {
       LqcController.storageOverride = null;
     }
-  }
-
-  /**
-   * The shipped DE_LQC config intentionally names a storage class
-   * (lqcEstateCaseStorage) that lives in examples/fsc-estate-case-demo, not
-   * in this package - resolving it requires that bundle (or an equivalent of
-   * your own) deployed alongside the package. This is a template-content
-   * assertion only: it must NOT call storageFor()/Type.forName, because
-   * whether that class actually resolves depends on what else is deployed
-   * in the org running this test, which this package's own suite has no
-   * business asserting on either way.
-   */
-  @IsTest
-  static void defaultStorageClassNameMatchesTheDocumentedExample() {
-    System.assertEquals(
-      'lqcEstateCaseStorage',
-      LqcController.storageClassName(LqcController.getConfig(null)),
-      'The shipped template should still point at the documented example storage class'
-    );
   }
 
   @IsTest
@@ -190,17 +186,24 @@ private class LqcControllerTest {
     Case c = makeCase();
     // An unknown config record makes getConfig throw; the controller must
     // surface it unchanged rather than wrapping it.
+    LqcController.configOverride = new Map<String, String>{
+      'DE_LQC' => '{"tabs":[]}'
+    };
     try {
-      LqcController.getSavedResult(c.Id, 'DoesNotExist');
-      System.assert(false, 'Expected AuraHandledException on load');
-    } catch (AuraHandledException e) {
-      System.assert(true);
-    }
-    try {
-      LqcController.saveResult(c.Id, '{}', 'DoesNotExist');
-      System.assert(false, 'Expected AuraHandledException on save');
-    } catch (AuraHandledException e) {
-      System.assert(true);
+      try {
+        LqcController.getSavedResult(c.Id, 'DoesNotExist');
+        System.assert(false, 'Expected AuraHandledException on load');
+      } catch (AuraHandledException e) {
+        System.assert(true);
+      }
+      try {
+        LqcController.saveResult(c.Id, '{}', 'DoesNotExist');
+        System.assert(false, 'Expected AuraHandledException on save');
+      } catch (AuraHandledException e) {
+        System.assert(true);
+      }
+    } finally {
+      LqcController.configOverride = null;
     }
   }
 
