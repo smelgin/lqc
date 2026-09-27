@@ -103,10 +103,10 @@ is installed. That means the CMDT _object_ has to land before the package, and t
    sf org assign permset --name LQC_Estate_Case_Access --target-org <alias>
    ```
 
-**Uninstalling** removes the package but not `Custom_Configuration__mdt` (it's subscriber-owned,
-never packaged) — `LqcUninstallScript` best-effort blanks the `DE_LQC` record's value instead of
-deleting it (Apex's Metadata API has no delete operation; see
-[`examples/README.md`](examples/README.md) for why).
+**Uninstalling** removes the package but not `Custom_Configuration__mdt` or its `DE_LQC` record
+(they're subscriber-owned, never packaged) — there's no uninstall script, since Apex's Metadata
+API has no delete operation, so a script could at best blank the record's value, not remove it;
+delete `DE_LQC` yourself via Setup or Workbench if you want it gone.
 
 ## Developing from source
 

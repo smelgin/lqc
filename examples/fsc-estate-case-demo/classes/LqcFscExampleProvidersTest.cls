@@ -125,9 +125,7 @@ private class LqcFscExampleProvidersTest {
    * DE_LQC record exists yet) is a Metadata API callout, and callouts aren't supported in
    * Apex tests - so onInstall() can only be exercised here in the "already deployed, skip
    * creation" branch, which is exactly the state this bundle's source deploy leaves the org
-   * in. The create branch, and LqcUninstallScript.onUninstall() (which would always reach
-   * the same kind of callout here, since this bundle's source deploy always leaves DE_LQC
-   * present), are verified manually against a real install/uninstall instead - see
+   * in. The create branch is verified manually against a real install instead - see
    * examples/README.md. A plain SOQL count is used rather than
    * LqcPostInstallScript.recordExists(), also private to the package.
    */

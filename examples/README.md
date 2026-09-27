@@ -86,10 +86,10 @@ reads it with a dynamic `Database.query()` rather than a static SOQL, both to
 avoid that namespace collision and so `force-app` can build as a package
 without owning this object at all.
 
-## Post-install / uninstall scripts
+## Post-install script
 
-The package's version is built with two scripts from `force-app` (see
-`sf package version create --post-install-script` / `--uninstall-script`):
+The package's version is built with a post-install script from `force-app`
+(see `sf package version create --post-install-script`):
 
 - **`LqcPostInstallScript`** checks that `Custom_Configuration__mdt` (with a
   `Value__c` field) already exists in the installing org and **aborts the
@@ -101,21 +101,21 @@ The package's version is built with two scripts from `force-app` (see
   doesn't ship). Creation goes through
   `Metadata.Operations.enqueueDeployment`, an asynchronous Metadata API call,
   so `DE_LQC` appears shortly after install finishes, not instantly.
-- **`LqcUninstallScript`** blanks `DE_LQC.Value__c` on uninstall, best effort.
-  **It cannot actually delete the record**: Apex's Metadata API deployment
-  (`Metadata.Operations.enqueueDeployment`) only supports creating/updating
-  custom metadata, never deleting it. Blanking the value stops a leftover
-  record from silently pointing the calculator at classes the uninstall just
-  removed; deleting the record itself needs Setup, Workbench, or a metadata
-  deploy from outside Apex.
+- There is deliberately **no uninstall script**. Apex's Metadata API
+  deployment (`Metadata.Operations.enqueueDeployment`) only supports
+  creating/updating custom metadata, never deleting it — a script could at
+  best blank `DE_LQC.Value__c`, not remove the record, which isn't useful
+  enough to justify one. Uninstalling the package leaves
+  `Custom_Configuration__mdt`/`DE_LQC` behind untouched (they're
+  subscriber-owned, not part of the package); delete `DE_LQC` yourself via
+  Setup, Workbench, or a metadata deploy if you want it gone.
 - Metadata API calls are treated as callouts, and Apex tests don't support
-  callouts, so the create/blank paths in both scripts can't be covered by
-  automated tests — see `LqcPostInstallScriptTest.cls` /
-  `LqcUninstallScriptTest.cls` in `force-app` (pure logic, no callout) and
+  callouts, so the create path can't be covered by automated tests — see
+  `LqcPostInstallScriptTest.cls` in `force-app` (pure logic, no callout) and
   `postInstallScriptSkipsCreationWhenTheTemplateAlreadyExists` here (the one
-  `onInstall()`/`onUninstall()` branch that doesn't reach a callout). Verify
-  the create/blank paths themselves manually against a real install/uninstall.
-- Both scripts' own helper methods (`recordExists`, `assertConfigObjectExists`,
+  `onInstall()` branch that doesn't reach a callout). Verify the create path
+  itself manually against a real install.
+- The script's own helper methods (`recordExists`, `assertConfigObjectExists`,
   `LqcController.storageClassName`) are `private` to the package, so tests in
   this unpackaged bundle can't call them directly — the tests here go through
   each class's public/global surface (`getConfig()`, `Test.testInstall()`,

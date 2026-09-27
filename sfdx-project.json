@@ -1,14 +1,13 @@
 {
   "packageDirectories": [
     {
-      "versionName": "ver 0.1.1",
+      "versionName": "ver 0.1.2",
       "versionNumber": "0.1.0.NEXT",
       "path": "force-app",
       "default": true,
       "package": "LQC",
       "versionDescription": "Liquidity Calculator - configurable pre-close financial position summary for Case records",
-      "postInstallScript": "LqcPostInstallScript",
-      "uninstallScript": "LqcUninstallScript"
+      "postInstallScript": "LqcPostInstallScript"
     }
   ],
   "name": "lqc",
