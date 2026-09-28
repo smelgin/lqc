@@ -1,12 +1,23 @@
 {
   "packageDirectories": [
     {
+      "versionName": "ver 0.1.2",
+      "versionNumber": "0.1.0.NEXT",
       "path": "force-app",
-      "default": true
+      "default": true,
+      "package": "LQC",
+      "versionDescription": "Liquidity Calculator - configurable pre-close financial position summary for Case records",
+      "postInstallScript": "LqcPostInstallScript"
     }
   ],
   "name": "lqc",
-  "namespace": "",
+  "namespace": "absa1",
   "sfdcLoginUrl": "https://login.salesforce.com",
-  "sourceApiVersion": "66.0"
+  "sourceApiVersion": "66.0",
+  "packageAliases": {
+    "LQC": "0HoWs000000GY0vKAG",
+    "LQC@0.1.0-1": "04tWs000000uCEbIAM",
+    "LQC@0.1.0-2": "04tWs000000uGwXIAU",
+    "LQC@0.1.0-3": "04tWs000000uJftIAE"
+  }
 }

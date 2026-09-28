@@ -1,8 +1,9 @@
 /**
- * @description Server-side controller for the Liquidity Calculator (LQC) LWC.
+ * @description Server-side controller for the Liquidity Calculator (LWC).
  *
  * Responsibilities:
- *  - Serve the JSON configuration stored in Custom_Configuration__mdt.
+ *  - Serve the JSON configuration stored in Custom_Configuration__mdt - a subscriber-owned
+ *    object, not part of this package (see queryConfigJson()), so it stays unnamespaced.
  *  - Load / persist the calculator state through the ILqcStorage strategy named by the
  *    config's "storageClass" key (defaults to LqcEstateCaseStorage).
  *  - Dynamically instantiate ILqcPrefill implementations to refresh tab rows.
@@ -13,6 +14,14 @@ public with sharing class LqcController {
   private static final String DEFAULT_CONFIG_DEV_NAME = 'DE_LQC';
 
   private static final String DEFAULT_STORAGE_CLASS = 'LqcEstateCaseStorage';
+
+  /**
+   * @description Injection seam for tests, keyed by DeveloperName. Mirrors storageOverride -
+   * this package ships no Custom_Configuration__mdt of its own (see queryConfigJson()), so
+   * this package's own test suite can't rely on a real record existing.
+   */
+  @TestVisible
+  private static Map<String, String> configOverride;
 
   /**
    * @description Returns the raw JSON configuration for the LQC tabs, stored in the shared
@@ -27,20 +36,36 @@ public with sharing class LqcController {
     String devName = String.isBlank(configName)
       ? DEFAULT_CONFIG_DEV_NAME
       : configName;
-    List<Custom_Configuration__mdt> configs = [
-      SELECT Value__c
-      FROM Custom_Configuration__mdt
-      WHERE DeveloperName = :devName
-      LIMIT 1
-    ];
-    if (configs.isEmpty() || String.isBlank(configs[0].Value__c)) {
+    String json = configOverride != null
+      ? configOverride.get(devName)
+      : queryConfigJson(devName);
+    if (String.isBlank(json)) {
       throw new AuraHandledException(
         'LQC configuration "' +
           devName +
           '" was not found in Custom_Configuration__mdt.'
       );
     }
-    return configs[0].Value__c;
+    return json;
+  }
+
+  /**
+   * @description Looks up a Custom_Configuration__mdt record's Value__c by DeveloperName.
+   * Custom_Configuration__mdt is not part of this package - it's created by the post-install
+   * script (see LqcPostInstallScript) in the subscriber org, or by hand for a non-packaged
+   * install. A dynamic query avoids compiling this package against that object directly:
+   * a static/literal SOQL would both fail to build (the object isn't in this package's own
+   * source) and, if it somehow did compile, would resolve to a same-named object this
+   * package shipped rather than the subscriber's, exactly the bug this class had to fix.
+   * @param devName DeveloperName to match.
+   * @return The record's Value__c, or null when no matching record exists.
+   */
+  @TestVisible
+  private static String queryConfigJson(String devName) {
+    List<SObject> configs = Database.query(
+      'SELECT Value__c FROM Custom_Configuration__mdt WHERE DeveloperName = :devName LIMIT 1'
+    );
+    return configs.isEmpty() ? null : (String) configs[0].get('Value__c');
   }
 
   /**
@@ -121,14 +146,17 @@ public with sharing class LqcController {
 
   /**
    * @description Instantiates and validates a storage strategy by class name.
-   * @param className Fully qualified Apex class name expected to implement ILqcStorage.
+   * @param className Apex class name expected to implement ILqcStorage. Resolved against the
+   * empty (local) namespace, since the class named by admin-controlled config lives outside
+   * this package - the single-arg Type.forName would otherwise scope the lookup to this
+   * package's own namespace once it ships under one.
    * @return A new instance of the named class, cast to ILqcStorage.
    * @throws AuraHandledException When the class cannot be found or does not implement
    * ILqcStorage.
    */
   @TestVisible
   private static ILqcStorage storageInstance(String className) {
-    Type storageType = Type.forName(className);
+    Type storageType = Type.forName('', className);
     if (storageType == null) {
       throw new AuraHandledException(
         'Storage class "' + className + '" was not found.'
@@ -163,7 +191,8 @@ public with sharing class LqcController {
   /**
    * @description Dynamically instantiates the configured prefill class and returns its
    * rows serialized as JSON (a List<Map<String, Object>>).
-   * @param className Fully qualified Apex class name expected to implement ILqcPrefill.
+   * @param className Apex class name expected to implement ILqcPrefill. Resolved against the
+   * empty (local) namespace - see storageInstance() for why.
    * @param recordId Id of the record the Liquidity Calculator is placed on (the Case).
    * @return The prefill rows serialized as a JSON array of objects.
    * @throws AuraHandledException When className is blank, the class cannot be found, does
@@ -176,7 +205,7 @@ public with sharing class LqcController {
         'No refresh class is configured for this tab.'
       );
     }
-    Type prefillType = Type.forName(className);
+    Type prefillType = Type.forName('', className);
     if (prefillType == null) {
       throw new AuraHandledException(
         'Refresh class "' + className + '" was not found.'

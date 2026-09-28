@@ -1,4 +1,9 @@
 /**
+ * REFERENCE IMPLEMENTATION - lives in /examples, not inside the LQC managed
+ * package. Deploy it separately, alongside the installed package, as a
+ * worked example of the packaged ILqcPrefill contract. Copy and adapt it;
+ * do not expect it to ship with the package itself.
+ *
  * @description Prefill provider for the "Credit Accounts" LQC tab, backed by the STANDARD
  * FSC data model: liability-side FinancialAccount records the Deceased (Case.AccountId)
  * actively owns through FinancialAccountParty (Role = 'Owner'). See LqcFscService for the
@@ -10,7 +15,7 @@
  * values guaranteed by the core picklist; the banking values come with FSC setup).
  * @author Ernesto S Melgin
  */
-public with sharing class LqcCreditAccounts implements ILqcPrefill {
+public with sharing class LqcCreditAccounts implements absa1.ILqcPrefill {
   @TestVisible
   private static final Set<String> ACCOUNT_TYPES = new Set<String>{
     'Credit Card',

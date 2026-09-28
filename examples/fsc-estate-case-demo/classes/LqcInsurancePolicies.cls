@@ -1,4 +1,9 @@
 /**
+ * REFERENCE IMPLEMENTATION - lives in /examples, not inside the LQC managed
+ * package. Deploy it separately, alongside the installed package, as a
+ * worked example of the packaged ILqcPrefill contract. Copy and adapt it;
+ * do not expect it to ship with the package itself.
+ *
  * @description Prefill provider for the "Insurance Policies" LQC tab, backed by the FSC
  * Insurance data model (standard objects): InsurancePolicy records where the Deceased (the
  * Case's standard Account, Case.AccountId) is the Named Insured, with the beneficiary
@@ -13,7 +18,7 @@
  * ---------------------------------------------------------------------------
  * @author Ernesto S Melgin
  */
-public with sharing class LqcInsurancePolicies implements ILqcPrefill {
+public with sharing class LqcInsurancePolicies implements absa1.ILqcPrefill {
   @TestVisible
   private static final String BENEFICIARY_ROLE = 'Beneficiary';
 

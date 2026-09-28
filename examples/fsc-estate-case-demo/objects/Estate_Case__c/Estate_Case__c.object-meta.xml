@@ -2,7 +2,7 @@
 <CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
     <deploymentStatus>Deployed</deploymentStatus>
     <description
-  >Minimal Estate Case backing the Liquidity Calculator's default storage strategy (LqcEstateCaseStorage). Deploy this ONLY in an org that does not already have Estate_Case__c — see the README.</description>
+  >Part of the LQC examples bundle (examples/fsc-estate-case-demo), NOT the managed package. Minimal Estate Case backing the reference LqcEstateCaseStorage implementation. Deploy this ONLY in an org that does not already have Estate_Case__c — see examples/README.md.</description>
     <enableActivities>true</enableActivities>
     <enableFeeds>false</enableFeeds>
     <enableHistory>false</enableHistory>

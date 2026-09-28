@@ -1,4 +1,9 @@
 /**
+ * REFERENCE IMPLEMENTATION - lives in /examples, not inside the LQC managed
+ * package. Deploy it separately, alongside the installed package, as a
+ * worked example of the packaged ILqcPrefill contract. Copy and adapt it;
+ * do not expect it to ship with the package itself.
+ *
  * @description Prefill provider for the "Debit Accounts" LQC tab, backed by the STANDARD
  * FSC data model: FinancialAccount records the Deceased (Case.AccountId) actively owns
  * through FinancialAccountParty (Role = 'Owner'), with amounts taken from the latest
@@ -9,7 +14,7 @@
  * picklist values configured in your org.
  * @author Ernesto S Melgin
  */
-public with sharing class LqcDebitAccounts implements ILqcPrefill {
+public with sharing class LqcDebitAccounts implements absa1.ILqcPrefill {
   @TestVisible
   private static final Set<String> ACCOUNT_TYPES = new Set<String>{
     'Checking',

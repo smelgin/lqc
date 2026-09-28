@@ -1,4 +1,10 @@
 /**
+ * REFERENCE IMPLEMENTATION - lives in /examples, not inside the LQC managed
+ * package. Deploy it separately, alongside the installed package. This class
+ * is not a packaged extension point itself - the extension points are the
+ * global ILqcPrefill/ILqcStorage interfaces the example classes below
+ * implement - it is shared plumbing those examples happen to reuse.
+ *
  * @description Shared FSC (Financial Services Cloud) data access for the LQC prefill
  * providers, built on the STANDARD (core) FSC data model introduced in API v61.0 -
  * FinancialAccount / FinancialAccountParty / FinancialAccountBalance - not the FinServ__*

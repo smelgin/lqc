@@ -1,4 +1,10 @@
 /**
+ * REFERENCE IMPLEMENTATION - lives in /examples, not inside the LQC managed
+ * package, together with the Estate_Case__c object it reads and writes.
+ * Deploy both separately, alongside the installed package, as a worked
+ * example of the packaged ILqcStorage contract. The package itself ships no
+ * default storage destination - every install picks or writes its own.
+ *
  * @description Default LQC storage strategy: keeps the payload in
  * Estate_Case__c.LQC_Result__c on the Estate Case related to the Case the component sits on.
  *
@@ -8,7 +14,7 @@
  * Case when none exists yet.
  * @author Ernesto S Melgin
  */
-public with sharing class LqcEstateCaseStorage implements ILqcStorage {
+public with sharing class LqcEstateCaseStorage implements absa1.ILqcStorage {
   @TestVisible
   private static final String PREFERRED_LOOKUP = 'Case__c';
 

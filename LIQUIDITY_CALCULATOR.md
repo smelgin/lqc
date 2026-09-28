@@ -83,16 +83,29 @@ The report tab — grey section row per data tab, white summary lines, boxed gra
 | `LqcController`             | `force-app/main/default/classes/LqcController.cls`                                                                          | Apex controller: `getConfig`, `getSavedResult`, `saveResult`, `refreshRows`.                                                                                                   |
 | `ILqcPrefill`               | `force-app/main/default/classes/ILqcPrefill.cls`                                                                            | Interface every refresh provider implements.                                                                                                                                   |
 | `ILqcStorage`               | `force-app/main/default/classes/ILqcStorage.cls`                                                                            | Pluggable persistence strategy — decides _where_ the payload lives.                                                                                                            |
-| `LqcEstateCaseStorage`      | `force-app/main/default/classes/LqcEstateCaseStorage.cls`                                                                   | Default strategy: `Estate_Case__c.LQC_Result__c` on the Estate Case related to the Case.                                                                                       |
-| `Lqc*` providers            | `force-app/main/default/classes/Lqc{DebitAccounts,CreditAccounts,InsurancePolicies,FixedProperties,Shares,OtherAssets}.cls` | Prefill implementations. **Debit/Credit/Insurance query Financial Services Cloud** (see §6.1); FixedProperties/Shares/OtherAssets are still stubs.                             |
-| `LqcFscService`             | `force-app/main/default/classes/LqcFscService.cls`                                                                          | Shared FSC access: resolves the Deceased Account from `Case.Account__c` and queries their Financial Accounts (owned, joint, or role-linked). Carries the FFLIB adoption notes. |
 | `Custom_Configuration__mdt` | `force-app/main/default/objects/Custom_Configuration__mdt/`                                                                 | Shared CMT holding the JSON in `Value__c` (Long Text Area, 131 072).                                                                                                           |
-| `DE_LQC` record             | `force-app/main/default/customMetadata/Custom_Configuration.DE_LQC.md-meta.xml`                                             | The configuration record. Label **DE Liquidity Calculator**.                                                                                                                   |
+| `DE_LQC` record             | `force-app/main/default/customMetadata/Custom_Configuration.DE_LQC.md-meta.xml`                                             | The configuration record. Label **DE Liquidity Calculator**. Ships as a *template*: its `refreshClass`/`storageClass` values name the example classes below.                  |
+
+Everything above lives under `force-app/` — `ILqcPrefill` and `ILqcStorage` are the package's only
+two extension points; nothing implementing them ships in the package itself.
+
+### Reference implementation (not part of the package)
+
+`examples/fsc-estate-case-demo/` — see [`examples/README.md`](examples/README.md) — is a worked
+example of both extension points, deployed separately:
+
+| Component               | Path                                                                                             | Implements    |
+| ------------------------ | -------------------------------------------------------------------------------------------------- | ------------- |
+| `LqcEstateCaseStorage`   | `examples/fsc-estate-case-demo/classes/LqcEstateCaseStorage.cls`                                    | `ILqcStorage` — writes `Estate_Case__c.LQC_Result__c`. |
+| `Lqc*` providers         | `examples/fsc-estate-case-demo/classes/Lqc{DebitAccounts,CreditAccounts,InsurancePolicies,FixedProperties,Shares,OtherAssets}.cls` | `ILqcPrefill` — Debit/Credit/Insurance query Financial Services Cloud (see §6.1); FixedProperties/Shares/OtherAssets are still stubs. |
+| `LqcFscService`          | `examples/fsc-estate-case-demo/classes/LqcFscService.cls`                                           | — Shared FSC access the providers above reuse: resolves the Deceased Account from `Case.AccountId` and queries their Financial Accounts (owned, joint, or role-linked). Carries the FFLIB adoption notes. |
+| `Estate_Case__c`         | `examples/fsc-estate-case-demo/objects/Estate_Case__c/`                                             | — The object `LqcEstateCaseStorage` reads/writes. |
 
 ### Two things the repo does _not_ contain
 
-1. **`Estate_Case__c`, its `LQC_Result__c` field, and its lookup to Case** — the storage
-   destination. Assumed to already exist in the target org; see [§8.1](#81-prerequisite-estate_case__c).
+1. **A default storage destination.** The package ships the `ILqcStorage` contract, not an
+   implementation — `Estate_Case__c` lives in the examples bundle, not the package; see
+   [§8.1](#81-prerequisite-estate_case__c).
 2. **Page layout / Lightning page assignment** — you add the component in App Builder after deploy.
 
 ---
@@ -115,6 +128,7 @@ The report tab — grey section row per data tab, white summary lines, boxed gra
                      │      └── lqcReport ◄─ rowsMap (live, in-memory only)
                      ▼
       LqcEstateCaseStorage ──► Estate_Case__c.LQC_Result__c
+      (examples/, not the package — any ILqcStorage implementation slots in here)
 ```
 
 Key flows:
@@ -205,7 +219,8 @@ Persistence is a **pluggable strategy**, resolved by name exactly like `refreshC
 }
 ```
 
-The shipped strategy, **`LqcEstateCaseStorage`**, stores the payload in
+The name in the shipped template, **`LqcEstateCaseStorage`** (in
+[`examples/fsc-estate-case-demo`](examples/README.md), not the package itself), stores the payload in
 **`Estate_Case__c.LQC_Result__c`** on the Estate Case related to the Case the component sits on —
 so nothing is written to Case itself. It:
 
@@ -366,6 +381,10 @@ row-mappers, and route any future DML through `fflib_ISObjectUnitOfWork` in `ILq
 
 ## 7. The saved payload (Estate_Case__c.LQC_Result__c)
 
+The shape below is storage-agnostic — every `ILqcStorage` implementation persists this same JSON,
+whatever the destination. `Estate_Case__c.LQC_Result__c` is just where the reference example (§8.1)
+happens to put it.
+
 **Save** and **Publish** both write this JSON:
 
 ```jsonc
@@ -425,18 +444,31 @@ change to the LWC or the controller.
 
 ### 8.1 Prerequisite: Estate_Case__c
 
-`LqcEstateCaseStorage` references these at compile time, so the deployment fails outright if they
-are missing. A **minimal** `Estate_Case__c` — the object, its `Case__c` lookup and `LQC_Result__c` —
-ships in this repo under `force-app/main/default/objects/Estate_Case__c/` so a clean org can deploy
-and run the tests. **Deploy it only in an org that does not already have `Estate_Case__c`**; where
-one exists, exclude that folder and satisfy the requirements below with the org's own object:
+The package itself (`force-app/`) has **no dependency** on `Estate_Case__c` or on Financial
+Services Cloud — it ships only the `ILqcPrefill` / `ILqcStorage` contracts, the controller, the
+LWCs, and `Custom_Configuration__mdt`. Its shipped `DE_LQC` record is a template whose
+`refreshClass`/`storageClass` values name classes the package doesn't contain — resolving them
+needs an implementation deployed alongside it. Skip the rest of this section if you're writing your
+own.
+
+This section covers the **reference example** instead —
+[`examples/fsc-estate-case-demo/`](examples/README.md) — which is what those template values
+point at, and which does depend on both:
+
+`LqcEstateCaseStorage` (in the example) references these at compile time, so deploying the example
+fails outright if they are missing. A **minimal** `Estate_Case__c` — the object, its `Case__c`
+lookup and `LQC_Result__c` — ships in the example under
+`examples/fsc-estate-case-demo/objects/Estate_Case__c/` so a clean org can deploy it and run its
+tests. **Deploy that folder only in an org that does not already have `Estate_Case__c`**; where one
+exists, skip it and point `LqcEstateCaseStorage` (or your own `ILqcStorage`) at the org's own object
+instead, satisfying the requirements below:
 
 | Metadata                              | Requirement                                                                                                                                                                                                                                                                                    |
 | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `Estate_Case__c`                      | Custom object, one record per Case.                                                                                                                                                                                                                                                            |
 | `Estate_Case__c.LQC_Result__c`        | Long Text Area, large enough for the payload (131 072 recommended).                                                                                                                                                                                                                            |
 | A lookup on `Estate_Case__c` → `Case` | Any API name; `Case__c` is preferred if several exist.                                                                                                                                                                                                                                         |
-| **Financial Services Cloud**          | An FSC org with the standard objects enabled: `FinancialAccount`, `FinancialAccountParty`, `FinancialAccountBalance` (API v61.0+, Setup → Financial Accounts) and the Insurance objects (`InsurancePolicy`, `InsurancePolicyParticipant`) — the v2.1 providers reference them at compile time. |
+| **Financial Services Cloud**          | An FSC org with the standard objects enabled: `FinancialAccount`, `FinancialAccountParty`, `FinancialAccountBalance` (API v61.0+, Setup → Financial Accounts) and the Insurance objects (`InsurancePolicy`, `InsurancePolicyParticipant`) — the example's providers reference them at compile time. |
 | `Case.AccountId`                      | Standard field; must be populated with the Deceased person's Account for prefill to work.                                                                                                                                                                                                      |
 
 Two things to check before the first save: the storage strategy creates an Estate Case when none
@@ -448,25 +480,37 @@ running user needs **Edit** access to it (see [§8.4](#84-permissions)).
 
 ### 8.2 What to deploy
 
-Everything under `force-app/main/default`:
+The package — `force-app/main/default`:
 
-| Type       | Items                                                                                                                                                                                                            |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| LWC        | `liquidityCalculator`, `lqcGrid`, `lqcDatatable`, `lqcReport`, `lqcBanner`, `lqcUtils`                                                                                                                           |
-| Apex       | `LqcController`, `ILqcPrefill`, `ILqcStorage`, `LqcEstateCaseStorage`, `LqcDebitAccounts`, `LqcCreditAccounts`, `LqcInsurancePolicies`, `LqcFixedProperties`, `LqcShares`, `LqcOtherAssets`, `LqcControllerTest` |
-| CMT        | `Custom_Configuration__mdt` + field `Value__c`                                                                                                                                                                   |
-| CMT record | `Custom_Configuration.DE_LQC`                                                                                                                                                                                    |
-| Object     | `Estate_Case__c` + `LQC_Result__c` + its `Case__c` lookup — **omit where the org already has one** (see §8.1)                                                                                                    |
+| Type       | Items                                                                                       |
+| ---------- | --------------------------------------------------------------------------------------------- |
+| LWC        | `liquidityCalculator`, `lqcGrid`, `lqcDatatable`, `lqcReport`, `lqcBanner`, `lqcUtils`         |
+| Apex       | `LqcController`, `ILqcPrefill`, `ILqcStorage`, `LqcControllerTest`                             |
+| CMT        | `Custom_Configuration__mdt` + field `Value__c`                                                 |
+| CMT record | `Custom_Configuration.DE_LQC` — a template; see §8.1                                           |
 
 `Custom_Configuration__mdt` is a **shared** metadata type — other features may already use it in
 the target org. If it exists there, deploying the object/field again is a no-op as long as the
 shapes match; if that org's `Value__c` is shorter than 131 072, widen it or the config will be
 truncated. Only the `DE_LQC` record belongs to this feature.
 
+The reference example — `examples/fsc-estate-case-demo` (optional, see §8.1):
+
+| Type   | Items                                                                                                                                                                        |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Apex   | `LqcEstateCaseStorage`, `LqcDebitAccounts`, `LqcCreditAccounts`, `LqcInsurancePolicies`, `LqcFixedProperties`, `LqcShares`, `LqcOtherAssets`, `LqcFscService`, `LqcTestIds`, `LqcFscExampleProvidersTest` |
+| Object | `Estate_Case__c` + `LQC_Result__c` + its `Case__c` lookup — **omit where the org already has one** (see §8.1) |
+
 ### 8.3 Deploy
 
 ```bash
 sf project deploy start --source-dir force-app --target-org <alias>
+```
+
+Optionally, deploy the reference example on top of it:
+
+```bash
+sf project deploy start --source-dir examples/fsc-estate-case-demo --target-org <alias>
 ```
 
 For a validation deploy to production, run the Apex tests:
@@ -481,10 +525,13 @@ sf project deploy start --source-dir force-app --target-org <alias> --test-level
 running user genuinely needs:
 
 - **Apex class access** to `LqcController` (profile or permission set).
-- **Read on Case**, plus **Read/Create/Edit on `Estate_Case__c`** and **Edit on
-  `Estate_Case__c.LQC_Result__c`** — FLS is enforced, so a read-only field produces a save error
-  banner rather than a silent failure.
-- Read access to whatever objects your real prefill classes query.
+- **Read on Case**.
+- Read/Create/Edit access on whatever storage destination your `storageClass` implementation
+  targets, and read access on whatever objects your `refreshClass` implementations query — for the
+  reference example that's **Read/Create/Edit on `Estate_Case__c`** and **Edit on
+  `Estate_Case__c.LQC_Result__c`** (FLS is enforced, so a read-only field produces a save error
+  banner rather than a silent failure), plus read on the Financial Services Cloud objects it
+  queries.
 
 Custom Metadata records are readable by all users in Apex, so `Custom_Configuration__mdt` needs no
 extra permission.
@@ -577,17 +624,24 @@ To keep the data and only unlock, read the JSON, set `"published": false`, and w
 ## 10. Testing
 
 ```bash
-npm run test:unit          # Jest — 54 tests across the LQC bundles
+npm run test:unit          # Jest — LWC bundles
 npm run lint               # ESLint
 npm run prettier:verify    # formatting
 sf apex run test --target-org <alias> --class-names LqcControllerTest --result-format human
+
+# If examples/fsc-estate-case-demo is also deployed:
+sf apex run test --target-org <alias> --class-names LqcFscExampleProvidersTest --result-format human
 ```
 
 Jest specs live in `__tests__/` next to each bundle and cover: config→column mapping, picklist
 option building, `number(p,s)` parsing, refresh replacing prefilled rows while keeping manual
 ones, banner variants, the add-row modal, report grouping/totals/currency, and the published
-lock. `LqcControllerTest` covers config lookup, the save round-trip, every stub provider,
-`fieldKey` parity with the JS implementation, and the invalid-class error paths.
+lock. `LqcControllerTest` (in the package) covers config lookup, the save round-trip against a
+pluggable in-memory storage, `fieldKey` parity with the JS implementation, and the invalid-class
+error paths — including a test that the shipped template throws until an implementation is
+deployed. `LqcFscExampleProvidersTest` (in `examples/fsc-estate-case-demo`, requires Financial
+Services Cloud) covers every example provider, the Estate Case lookup discovery, and the
+counterpart proof that the template *does* resolve once the example is deployed.
 
 ---
 
@@ -595,8 +649,8 @@ lock. `LqcControllerTest` covers config lookup, the save round-trip, every stub 
 
 | Area                        | Current behavior                                                                      | Rationale / next step                                                                                                                                  |
 | --------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Storage**                 | `Estate_Case__c.LQC_Result__c`, via the `ILqcStorage` strategy                        | Swap by writing another implementation and naming it in `storageClass` — no LWC or controller change.                                                  |
-| **Prefill classes**         | Debit/Credit/Insurance query FSC (v2.1); FixedProperties/Shares/OtherAssets are stubs | See §6.1 for the FSC inclusion rules and the DoD-balance / cover-amount TODOs.                                                                         |
+| **Storage**                 | Package ships only the `ILqcStorage` contract; the reference example writes `Estate_Case__c.LQC_Result__c` | Swap by writing another implementation and naming it in `storageClass` — no LWC or controller change.                                     |
+| **Prefill classes**         | Package ships only the `ILqcPrefill` contract; the reference example's Debit/Credit/Insurance query FSC, FixedProperties/Shares/OtherAssets are stubs | See §6.1 for the FSC inclusion rules and the DoD-balance / cover-amount TODOs.                                          |
 | **Publish**                 | Sets `published: true` and locks the UI                                               | No approval process or audit trail, and no unpublish button by design.                                                                                 |
 | **Grand total**             | Simple sum of all tab subtotals                                                       | Confirmed requirement — no tab is treated as a liability. If that changes, add a `liability: true` tab flag and subtract it in `lqcReport.grandTotal`. |
 | **Currency display**        | `Intl.NumberFormat` with the **viewer's** locale                                      | An `en-ZA` user sees `R10 563 000`; an `en-US` user sees `ZAR 10,563,000`. Hardcode the locale in `lqcReport.formatter` if you need one fixed format.  |
