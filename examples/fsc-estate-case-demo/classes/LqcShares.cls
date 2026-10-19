@@ -4,7 +4,7 @@
  * worked example of the packaged ILqcPrefill contract.
  *
  * Declared global, not public: LqcController.refreshRows() resolves this class dynamically
- * with Type.forName('', className).newInstance() from inside the packaged absa1 namespace.
+ * with Type.forName('', className).newInstance() from inside the packaged absa0 namespace.
  * Type.newInstance() can't construct a class in a different namespace - including the
  * subscriber's local, unnamespaced one - unless that class (and so its implicit no-arg
  * constructor) is global; public only grants same-namespace access. A public implementation
@@ -15,7 +15,7 @@
  * with the real data source (SOQL / callout) when available.
  * @author Ernesto S Melgin
  */
-global with sharing class LqcShares implements absa1.ILqcPrefill {
+global with sharing class LqcShares implements absa0.ILqcPrefill {
   /**
    * @description Returns hardcoded placeholder rows until a real shareholding data source is
    * wired up.

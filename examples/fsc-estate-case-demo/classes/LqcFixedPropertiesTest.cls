@@ -24,7 +24,7 @@ private class LqcFixedPropertiesTest {
 
   /**
    * LqcController.refreshRows() instantiates this class dynamically with
-   * Type.forName('', className).newInstance() from inside the packaged absa1 namespace -
+   * Type.forName('', className).newInstance() from inside the packaged absa0 namespace -
    * that requires LqcFixedProperties to be global, not public (see LqcShares.cls's class doc
    * comment). A regression here would pass the direct-call test above but break at runtime
    * through the real LWC call path.
@@ -33,7 +33,7 @@ private class LqcFixedPropertiesTest {
   static void dispatchesThroughLqcController() {
     Case c = LqcFscTestData.makeCase();
 
-    String rowsJson = absa1.LqcController.refreshRows(
+    String rowsJson = absa0.LqcController.refreshRows(
       'LqcFixedProperties',
       c.Id
     );

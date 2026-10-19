@@ -11,7 +11,7 @@
     }
   ],
   "name": "lqc",
-  "namespace": "absa1",
+  "namespace": "absa0",
   "sfdcLoginUrl": "https://login.salesforce.com",
   "sourceApiVersion": "66.0",
   "packageAliases": {

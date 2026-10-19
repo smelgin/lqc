@@ -77,7 +77,7 @@ private class LqcDebitAccountsTest {
 
   /**
    * LqcController.refreshRows() instantiates this class dynamically with
-   * Type.forName('', className).newInstance() from inside the packaged absa1 namespace -
+   * Type.forName('', className).newInstance() from inside the packaged absa0 namespace -
    * that requires LqcDebitAccounts to be global, not public (see its class doc comment).
    * A regression here would pass direct-call tests above but break at runtime through the
    * real LWC call path.
@@ -86,7 +86,7 @@ private class LqcDebitAccountsTest {
   static void dispatchesThroughLqcController() {
     Case c = LqcFscTestData.makeCaseFor(LqcFscTestData.makeDeceased());
 
-    String rowsJson = absa1.LqcController.refreshRows('LqcDebitAccounts', c.Id);
+    String rowsJson = absa0.LqcController.refreshRows('LqcDebitAccounts', c.Id);
 
     System.assertEquals(
       0,

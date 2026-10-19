@@ -28,7 +28,7 @@ destination.
 
 ## Deploying it
 
-This bundle's classes `implement absa1.ILqcPrefill` / `absa1.ILqcStorage`, so they only compile
+This bundle's classes `implement absa0.ILqcPrefill` / `absa0.ILqcStorage`, so they only compile
 once the `LQC` package is installed — and the package's post-install script only succeeds if
 `Custom_Configuration__mdt` already exists. Those two facts mean this can't go in as one deploy
 before or after the package; see the [top-level README](../README.md#installing-the-managed-package)
@@ -80,7 +80,7 @@ classes once you've written them.
 reason `ILqcPrefill`/`ILqcStorage` implementers are (see below): a custom
 object shipped _inside_ a namespaced package is always namespaced on
 install, so a packaged `Custom_Configuration__mdt` would install as
-`absa1__Custom_Configuration__mdt` — colliding with, not reusing, a
+`absa0__Custom_Configuration__mdt` — colliding with, not reusing, a
 subscriber's already-existing unnamespaced one. `LqcController.getConfig()`
 reads it with a dynamic `Database.query()` rather than a static SOQL, both to
 avoid that namespace collision and so `force-app` can build as a package
@@ -123,11 +123,11 @@ The package's version is built with a post-install script from `force-app`
 
 ## Adapting this once the package has a namespace
 
-`force-app/` is packaged under the `absa1` namespace, so every `implements
+`force-app/` is packaged under the `absa0` namespace, so every `implements
 ILqcPrefill` / `implements ILqcStorage` line in this bundle is namespace-
-qualified: `implements absa1.ILqcPrefill` / `implements absa1.ILqcStorage`.
+qualified: `implements absa0.ILqcPrefill` / `implements absa0.ILqcStorage`.
 **This means these classes no longer compile as plain, unpackaged Apex** —
-they only resolve once `absa1.ILqcPrefill` / `absa1.ILqcStorage` actually
+they only resolve once `absa0.ILqcPrefill` / `absa0.ILqcStorage` actually
 exist in the org, i.e. once the `force-app` package is installed under that
 namespace. If you're adapting this bundle for an unnamespaced or
 differently-namespaced install, update these `implements` lines to match.
@@ -140,7 +140,7 @@ where these example classes live.
 
 **Your own `ILqcPrefill` / `ILqcStorage` implementations must be declared `global`,
 not `public`.** `LqcController` calls `Type.forName('', className).newInstance()` from
-_inside_ the packaged `absa1` namespace to build your class, and `Type.newInstance()`
+_inside_ the packaged `absa0` namespace to build your class, and `Type.newInstance()`
 can't construct a class in a different namespace — including your org's local,
 unnamespaced one — unless that class (and so its implicit no-arg constructor) is
 `global`; `public` only grants same-namespace access. A `public` implementation

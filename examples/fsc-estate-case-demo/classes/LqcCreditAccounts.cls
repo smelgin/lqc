@@ -18,7 +18,7 @@
  * dynamic Type.forName/newInstance dispatch requires it.
  * @author Ernesto S Melgin
  */
-global with sharing class LqcCreditAccounts implements absa1.ILqcPrefill {
+global with sharing class LqcCreditAccounts implements absa0.ILqcPrefill {
   @TestVisible
   private static final Set<String> ACCOUNT_TYPES = new Set<String>{
     'Credit Card',

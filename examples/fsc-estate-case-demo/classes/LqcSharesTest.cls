@@ -34,7 +34,7 @@ private class LqcSharesTest {
   static void isResolvedByItsLowerCamelCaseDispatchName() {
     Case c = LqcFscTestData.makeCase();
 
-    String rowsJson = absa1.LqcController.refreshRows('lqcShares', c.Id);
+    String rowsJson = absa0.LqcController.refreshRows('lqcShares', c.Id);
 
     List<Object> rows = (List<Object>) JSON.deserializeUntyped(rowsJson);
     System.assertEquals(2, rows.size());

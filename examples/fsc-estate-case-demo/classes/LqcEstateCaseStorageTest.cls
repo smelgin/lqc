@@ -77,17 +77,17 @@ private class LqcEstateCaseStorageTest {
 
   /**
    * Custom_Configuration__mdt and its DE_LQC record live in this bundle, not the package
-   * (see absa1.LqcController.queryConfigJson) - a real install creates DE_LQC via
+   * (see absa0.LqcController.queryConfigJson) - a real install creates DE_LQC via
    * LqcPostInstallScript, but for a source deploy like this one it's just part of
    * examples/fsc-estate-case-demo/customMetadata. Proves the shipped template still points
    * at this documented example storage class. Parses getConfig()'s JSON directly rather than
-   * calling absa1.LqcController.storageClassName(): that method is private to the package, so
+   * calling absa0.LqcController.storageClassName(): that method is private to the package, so
    * unpackaged code in this bundle can't reach it across the package boundary.
    */
   @IsTest
   static void defaultConfigNamesThisDocumentedExampleStorageClass() {
     Map<String, Object> config = (Map<String, Object>) JSON.deserializeUntyped(
-      absa1.LqcController.getConfig(null)
+      absa0.LqcController.getConfig(null)
     );
     System.assertEquals(
       'lqcEstateCaseStorage',
@@ -107,7 +107,7 @@ private class LqcEstateCaseStorageTest {
    */
   @IsTest
   static void postInstallScriptSkipsCreationWhenTheTemplateAlreadyExists() {
-    Test.testInstall(new absa1.LqcPostInstallScript(), null);
+    Test.testInstall(new absa0.LqcPostInstallScript(), null);
     System.assertEquals(
       1,
       [
@@ -129,10 +129,10 @@ private class LqcEstateCaseStorageTest {
     String payload = '{"version":1,"published":false,"tabs":{"shares":[]}}';
 
     Test.startTest();
-    System.assertEquals(null, absa1.LqcController.getSavedResult(c.Id, null));
-    absa1.LqcController.saveResult(c.Id, payload, null);
-    absa1.LqcController.saveResult(c.Id, payload, null);
-    String stored = absa1.LqcController.getSavedResult(c.Id, null);
+    System.assertEquals(null, absa0.LqcController.getSavedResult(c.Id, null));
+    absa0.LqcController.saveResult(c.Id, payload, null);
+    absa0.LqcController.saveResult(c.Id, payload, null);
+    String stored = absa0.LqcController.getSavedResult(c.Id, null);
     Test.stopTest();
 
     System.assertEquals(payload, stored, 'Saved payload should round-trip');

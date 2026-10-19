@@ -59,7 +59,7 @@ npm run test:unit
 
 ## Installing the managed package
 
-`force-app` ships as a 2GP managed package under namespace `absa1`, not as source you deploy
+`force-app` ships as a 2GP managed package under namespace `absa0`, not as source you deploy
 directly — install it with `sf package install`, not `sf project deploy start`. Current Beta
 version is aliased in [`sfdx-project.json`](sfdx-project.json) as `LQC@0.1.0-5`; Beta versions
 only install into **scratch orgs and Developer Edition orgs**, not sandboxes or production.
@@ -71,7 +71,7 @@ no install handler registered on that version to run or fail. `LQC@0.1.0-2` and 
 
 **The install order matters.** `LqcPostInstallScript` aborts the install if
 `Custom_Configuration__mdt` doesn't already exist in the target org, and `examples/`'s Apex
-classes `implement absa1.ILqcPrefill` / `absa1.ILqcStorage`, so they only compile once the package
+classes `implement absa0.ILqcPrefill` / `absa0.ILqcStorage`, so they only compile once the package
 is installed. That means the CMDT _object_ has to land before the package, and the rest of
 `examples/` has to land after:
 

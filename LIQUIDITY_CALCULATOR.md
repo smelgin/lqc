@@ -297,7 +297,7 @@ Requirements for an implementation:
   - **Installed as the 2GP package** (`sf package install`, the documented path — see the
     [top-level README](README.md#installing-the-managed-package)): your implementation must be
     **`global`**, not `public`. `LqcController.refreshRows()` calls
-    `Type.forName('', className).newInstance()` from _inside_ the packaged `absa1` namespace,
+    `Type.forName('', className).newInstance()` from _inside_ the packaged `absa0` namespace,
     and `Type.newInstance()` can't construct a class in a different namespace — including your
     org's local, unnamespaced one — unless that class (and so its implicit no-arg constructor)
     is `global`. A `public` implementation **compiles and deploys without any error** and looks

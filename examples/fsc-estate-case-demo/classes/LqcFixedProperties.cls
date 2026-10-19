@@ -10,7 +10,7 @@
  * dynamic Type.forName/newInstance dispatch requires it.
  * @author Ernesto S Melgin
  */
-global with sharing class LqcFixedProperties implements absa1.ILqcPrefill {
+global with sharing class LqcFixedProperties implements absa0.ILqcPrefill {
   /**
    * @description Returns hardcoded placeholder rows until the WinDeed extract integration
    * is built.

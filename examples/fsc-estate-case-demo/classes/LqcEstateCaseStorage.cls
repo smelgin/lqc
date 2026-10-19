@@ -17,7 +17,7 @@
  * saveResult()'s dynamic Type.forName/newInstance dispatch requires it.
  * @author Ernesto S Melgin
  */
-global with sharing class LqcEstateCaseStorage implements absa1.ILqcStorage {
+global with sharing class LqcEstateCaseStorage implements absa0.ILqcStorage {
   @TestVisible
   private static final String PREFERRED_LOOKUP = 'Case__c';
 
