@@ -40,7 +40,6 @@ global with sharing class LqcInsurancePolicies implements absa0.ILqcPrefill {
       FROM InsurancePolicy
       WHERE NameInsuredId = :deceasedId
       WITH USER_MODE
-      ORDER BY Name
     ];
 
     Map<Id, String> beneficiaryByPolicy = beneficiaryNames(policies);
