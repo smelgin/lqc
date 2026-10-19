@@ -9,7 +9,7 @@
  *  - Dynamically instantiate ILqcPrefill implementations to refresh tab rows.
  * @author Ernesto S Melgin
  */
-public with sharing class LqcController {
+global with sharing class LqcController {
   @TestVisible
   private static final String DEFAULT_CONFIG_DEV_NAME = 'DE_LQC';
 
@@ -32,7 +32,7 @@ public with sharing class LqcController {
    * @throws AuraHandledException When no matching, non-blank configuration record exists.
    */
   @AuraEnabled(cacheable=true)
-  public static String getConfig(String configName) {
+  global static String getConfig(String configName) {
     String devName = String.isBlank(configName)
       ? DEFAULT_CONFIG_DEV_NAME
       : configName;
@@ -79,7 +79,7 @@ public with sharing class LqcController {
    * resolved, or the underlying strategy fails to load.
    */
   @AuraEnabled
-  public static String getSavedResult(Id recordId, String configName) {
+  global static String getSavedResult(Id recordId, String configName) {
     try {
       return storageFor(configName).load(recordId);
     } catch (AuraHandledException e) {
@@ -102,7 +102,7 @@ public with sharing class LqcController {
    * resolved, or the underlying strategy fails to save.
    */
   @AuraEnabled
-  public static void saveResult(
+  global static void saveResult(
     Id recordId,
     String payload,
     String configName
@@ -199,7 +199,7 @@ public with sharing class LqcController {
    * not implement ILqcPrefill, or refresh() throws.
    */
   @AuraEnabled
-  public static String refreshRows(String className, Id recordId) {
+  global static String refreshRows(String className, Id recordId) {
     if (String.isBlank(className)) {
       throw new AuraHandledException(
         'No refresh class is configured for this tab.'

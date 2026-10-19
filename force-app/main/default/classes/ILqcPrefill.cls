@@ -9,7 +9,7 @@
  * that record.
  * @author Ernesto S Melgin
  */
-public interface ILqcPrefill {
+global interface ILqcPrefill {
   /**
    * @description Builds the prefill rows for one LQC tab.
    * @param recordId Id of the record the Liquidity Calculator is placed on (the Case).

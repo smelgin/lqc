@@ -15,7 +15,7 @@
  *    enforcing FLS/sharing (use AccessLevel.USER_MODE).
  * @author Ernesto S Melgin
  */
-public interface ILqcStorage {
+global interface ILqcStorage {
   /**
    * @description Returns the stored JSON payload for the given record, or null when
    * nothing has been saved yet. Must not throw for "no data".

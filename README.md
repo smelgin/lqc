@@ -60,10 +60,13 @@ npm run test:unit
 
 `force-app` ships as a 2GP managed package under namespace `absa1`, not as source you deploy
 directly — install it with `sf package install`, not `sf project deploy start`. Current Beta
-version is aliased in [`sfdx-project.json`](sfdx-project.json) as `LQC@0.1.0-2`; Beta versions
-only install into **scratch orgs and Developer Edition orgs**, not sandboxes or production
-(promote to Released first — see [`examples/README.md`](examples/README.md) for the coverage
-caveat that currently blocks that).
+version is aliased in [`sfdx-project.json`](sfdx-project.json) as `LQC@0.1.0-5`; Beta versions
+only install into **scratch orgs and Developer Edition orgs**, not sandboxes or production.
+
+**Don't install `LQC@0.1.0-1`.** It was built before `LqcPostInstallScript` was wired up as the
+package's post-install handler at all, so installing it is silently a no-op with respect to
+`Custom_Configuration__mdt`/`DE_LQC` — no object, no record, and no error either, because there's
+no install handler registered on that version to run or fail. `LQC@0.1.0-2` and later all have it.
 
 **The install order matters.** `LqcPostInstallScript` aborts the install if
 `Custom_Configuration__mdt` doesn't already exist in the target org, and `examples/`'s Apex
@@ -83,7 +86,7 @@ is installed. That means the CMDT _object_ has to land before the package, and t
    command returns, not instantly):
 
    ```bash
-   sf package install --package LQC@0.1.0-2 --target-org <alias> --wait 10
+   sf package install --package LQC@0.1.0-5 --target-org <alias> --wait 10
    ```
 
 3. **Deploy the rest of the reference example** (optional — see

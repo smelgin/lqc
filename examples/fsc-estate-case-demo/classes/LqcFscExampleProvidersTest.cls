@@ -101,17 +101,17 @@ private class LqcFscExampleProvidersTest {
 
   /**
    * Custom_Configuration__mdt and its DE_LQC record live in this bundle, not the package
-   * (see LqcController.queryConfigJson) - a real install creates DE_LQC via
+   * (see absa1.LqcController.queryConfigJson) - a real install creates DE_LQC via
    * LqcPostInstallScript, but for a source deploy like this one it's just part of
    * examples/fsc-estate-case-demo/customMetadata. Proves the shipped template still points
    * at the documented example storage class. Parses getConfig()'s JSON directly rather than
-   * calling LqcController.storageClassName(): that method is private to the package, so
+   * calling absa1.LqcController.storageClassName(): that method is private to the package, so
    * unpackaged code in this bundle can't reach it across the package boundary.
    */
   @IsTest
   static void defaultConfigNamesTheDocumentedExampleStorageClass() {
     Map<String, Object> config = (Map<String, Object>) JSON.deserializeUntyped(
-      LqcController.getConfig(null)
+      absa1.LqcController.getConfig(null)
     );
     System.assertEquals(
       'lqcEstateCaseStorage',
@@ -131,7 +131,7 @@ private class LqcFscExampleProvidersTest {
    */
   @IsTest
   static void postInstallScriptSkipsCreationWhenTheTemplateAlreadyExists() {
-    Test.testInstall(new LqcPostInstallScript(), null);
+    Test.testInstall(new absa1.LqcPostInstallScript(), null);
     System.assertEquals(
       1,
       [
@@ -153,10 +153,10 @@ private class LqcFscExampleProvidersTest {
     String payload = '{"version":1,"published":false,"tabs":{"shares":[]}}';
 
     Test.startTest();
-    System.assertEquals(null, LqcController.getSavedResult(c.Id, null));
-    LqcController.saveResult(c.Id, payload, null);
-    LqcController.saveResult(c.Id, payload, null);
-    String stored = LqcController.getSavedResult(c.Id, null);
+    System.assertEquals(null, absa1.LqcController.getSavedResult(c.Id, null));
+    absa1.LqcController.saveResult(c.Id, payload, null);
+    absa1.LqcController.saveResult(c.Id, payload, null);
+    String stored = absa1.LqcController.getSavedResult(c.Id, null);
     Test.stopTest();
 
     System.assertEquals(payload, stored, 'Saved payload should round-trip');
@@ -178,7 +178,7 @@ private class LqcFscExampleProvidersTest {
     };
 
     for (String className : expectedCounts.keySet()) {
-      String rowsJson = LqcController.refreshRows(className, c.Id);
+      String rowsJson = absa1.LqcController.refreshRows(className, c.Id);
       List<Object> rows = (List<Object>) JSON.deserializeUntyped(rowsJson);
       System.assertEquals(
         expectedCounts.get(className),
@@ -192,7 +192,7 @@ private class LqcFscExampleProvidersTest {
   static void refreshRowsIsCaseInsensitiveOnClassName() {
     Case c = makeCase();
     // The JSON config uses lowerCamelCase names, e.g. "lqcShares".
-    String rowsJson = LqcController.refreshRows('lqcShares', c.Id);
+    String rowsJson = absa1.LqcController.refreshRows('lqcShares', c.Id);
     List<Object> rows = (List<Object>) JSON.deserializeUntyped(rowsJson);
     System.assertEquals(2, rows.size());
   }
@@ -208,7 +208,7 @@ private class LqcFscExampleProvidersTest {
       }
     ) {
       try {
-        LqcController.refreshRows(className, withoutDeceased.Id);
+        absa1.LqcController.refreshRows(className, withoutDeceased.Id);
         System.assert(
           false,
           className + ' should fail without a Deceased Account'
@@ -250,7 +250,7 @@ private class LqcFscExampleProvidersTest {
     };
 
     Test.startTest();
-    String rowsJson = LqcController.refreshRows('LqcDebitAccounts', c.Id);
+    String rowsJson = absa1.LqcController.refreshRows('LqcDebitAccounts', c.Id);
     Test.stopTest();
 
     List<Object> rows = (List<Object>) JSON.deserializeUntyped(rowsJson);
@@ -344,7 +344,10 @@ private class LqcFscExampleProvidersTest {
     };
 
     Test.startTest();
-    String rowsJson = LqcController.refreshRows('LqcCreditAccounts', c.Id);
+    String rowsJson = absa1.LqcController.refreshRows(
+      'LqcCreditAccounts',
+      c.Id
+    );
     Test.stopTest();
 
     List<Object> rows = (List<Object>) JSON.deserializeUntyped(rowsJson);
@@ -393,7 +396,10 @@ private class LqcFscExampleProvidersTest {
     };
 
     Test.startTest();
-    String rowsJson = LqcController.refreshRows('LqcInsurancePolicies', c.Id);
+    String rowsJson = absa1.LqcController.refreshRows(
+      'LqcInsurancePolicies',
+      c.Id
+    );
     Test.stopTest();
 
     List<Object> rows = (List<Object>) JSON.deserializeUntyped(rowsJson);
@@ -411,7 +417,10 @@ private class LqcFscExampleProvidersTest {
   static void insurancePoliciesReturnNothingWhenTheDeceasedHasNone() {
     Case c = makeCaseFor(makeDeceased());
 
-    String rowsJson = LqcController.refreshRows('LqcInsurancePolicies', c.Id);
+    String rowsJson = absa1.LqcController.refreshRows(
+      'LqcInsurancePolicies',
+      c.Id
+    );
 
     List<Object> rows = (List<Object>) JSON.deserializeUntyped(rowsJson);
     System.assertEquals(
