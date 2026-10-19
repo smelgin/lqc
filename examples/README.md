@@ -13,18 +13,18 @@ data tabs shipped in the package's default `DE_LQC` custom metadata record
 against Financial Services Cloud standard objects, plus a default storage
 destination.
 
-| Component                                                                                      | Implements    | Notes                                                                                                                                                                                          |
-| ---------------------------------------------------------------------------------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `LqcFscService.cls`                                                                            | —             | Shared FSC query/ownership helper the providers below reuse.                                                                                                                                   |
-| `LqcDebitAccounts.cls`, `LqcCreditAccounts.cls`                                                | `ILqcPrefill` | Query `FinancialAccount` via `FinancialAccountParty` ownership.                                                                                                                                |
-| `LqcInsurancePolicies.cls`                                                                     | `ILqcPrefill` | Queries `InsurancePolicy` / `InsurancePolicyParticipant`.                                                                                                                                      |
-| `LqcFixedProperties.cls`, `LqcShares.cls`, `LqcOtherAssets.cls`                                | `ILqcPrefill` | Static stub rows — no real data source wired up yet.                                                                                                                                           |
-| `LqcEstateCaseStorage.cls`                                                                     | `ILqcStorage` | Default-flavored strategy: stores the payload on `Estate_Case__c`.                                                                                                                             |
-| `LqcTestIds.cls`                                                                               | —             | Test-only helper: synthesizes Ids for FSC objects that Apex tests can't insert (e.g. `FinancialAccountBalance`, read-only in the API).                                                         |
-| `LqcFscExampleProvidersTest.cls`                                                               | —             | Tests for everything above, including a round-trip proving the package's shipped default config resolves once this bundle is deployed.                                                         |
-| `objects/Estate_Case__c/`                                                                      | —             | Minimal custom object `LqcEstateCaseStorage` reads/writes.                                                                                                                                     |
-| `permissionsets/LQC_Estate_Case_Access.permissionset-meta.xml`                                 | —             | Object/field access to `Estate_Case__c` that `LqcEstateCaseStorage` needs under `USER_MODE`.                                                                                                   |
-| `objects/Custom_Configuration__mdt/`, `customMetadata/Custom_Configuration.DE_LQC.md-meta.xml` | —             | The config object `LqcController.getConfig()` reads, plus the shipped default template. Not part of the package (see below); a real install gets `DE_LQC` from `LqcPostInstallScript` instead. |
+| Component                                                                                      | Implements    | Notes                                                                                                                                                                                                                                                                      |
+| ---------------------------------------------------------------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `LqcFscService.cls`                                                                            | —             | Shared FSC query/ownership helper the providers below reuse.                                                                                                                                                                                                               |
+| `LqcDebitAccounts.cls`, `LqcCreditAccounts.cls`                                                | `ILqcPrefill` | Query `FinancialAccount` via `FinancialAccountParty` ownership.                                                                                                                                                                                                            |
+| `LqcInsurancePolicies.cls`                                                                     | `ILqcPrefill` | Queries `InsurancePolicy` / `InsurancePolicyParticipant`.                                                                                                                                                                                                                  |
+| `LqcFixedProperties.cls`, `LqcShares.cls`, `LqcOtherAssets.cls`                                | `ILqcPrefill` | Static stub rows — no real data source wired up yet.                                                                                                                                                                                                                       |
+| `LqcEstateCaseStorage.cls`                                                                     | `ILqcStorage` | Default-flavored strategy: stores the payload on `Estate_Case__c`.                                                                                                                                                                                                         |
+| `LqcTestIds.cls`, `LqcFscTestData.cls`                                                         | —             | Test-only helpers: `LqcTestIds` synthesizes Ids for FSC objects Apex tests can't insert (e.g. `FinancialAccountBalance`, read-only in the API); `LqcFscTestData` builds the shared Case/Account/FinancialAccount fixtures the test classes below reuse.                    |
+| `Lqc*Test.cls` (one per class above)                                                           | —             | One test class per production class, matching the package's own convention — `LqcEstateCaseStorageTest` also covers the bundle-level wiring: the shipped `DE_LQC` template, and the round-trip proving the package's default config resolves once this bundle is deployed. |
+| `objects/Estate_Case__c/`                                                                      | —             | Minimal custom object `LqcEstateCaseStorage` reads/writes.                                                                                                                                                                                                                 |
+| `permissionsets/LQC_Estate_Case_Access.permissionset-meta.xml`                                 | —             | Object/field access to `Estate_Case__c` that `LqcEstateCaseStorage` needs under `USER_MODE`.                                                                                                                                                                               |
+| `objects/Custom_Configuration__mdt/`, `customMetadata/Custom_Configuration.DE_LQC.md-meta.xml` | —             | The config object `LqcController.getConfig()` reads, plus the shipped default template. Not part of the package (see below); a real install gets `DE_LQC` from `LqcPostInstallScript` instead.                                                                             |
 
 ## Deploying it
 
@@ -59,7 +59,7 @@ column" error until `LQC_Estate_Case_Access` is assigned:
 sf org assign permset --name LQC_Estate_Case_Access --target-org <alias>
 ```
 
-`LqcFscExampleProvidersTest` assigns it to the running user itself in
+`LqcEstateCaseStorageTest` assigns it to the running user itself in
 `@TestSetup`, so the test suite doesn't need this step.
 
 **If the org already has its own `Estate_Case__c`**, skip
@@ -137,3 +137,17 @@ The class name _strings_ in the `DE_LQC` JSON config (`lqcEstateCaseStorage`,
 resolves them with `Type.forName('', className)`, which explicitly looks in
 the local (subscriber-org) namespace rather than the package's own — exactly
 where these example classes live.
+
+**Your own `ILqcPrefill` / `ILqcStorage` implementations must be declared `global`,
+not `public`.** `LqcController` calls `Type.forName('', className).newInstance()` from
+_inside_ the packaged `absa1` namespace to build your class, and `Type.newInstance()`
+can't construct a class in a different namespace — including your org's local,
+unnamespaced one — unless that class (and so its implicit no-arg constructor) is
+`global`; `public` only grants same-namespace access. A `public` implementation
+compiles and deploys without any error and looks correct, but `refreshRows()` /
+`getSavedResult()` / `saveResult()` throw an `AuraHandledException` the moment
+`LqcController` actually dispatches to it — this is why every class in this bundle
+that `LqcController` instantiates by name (`LqcDebitAccounts`, `LqcCreditAccounts`,
+`LqcInsurancePolicies`, `LqcFixedProperties`, `LqcShares`, `LqcOtherAssets`,
+`LqcEstateCaseStorage`) is `global`. `LqcFscService` stays `public` since nothing
+dispatches to it by name — the providers call it directly, same-namespace.

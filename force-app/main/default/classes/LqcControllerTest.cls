@@ -3,8 +3,8 @@
  * ILqcStorage/ILqcPrefill/Custom_Configuration__mdt (configOverride). None of those three
  * are part of this package - the concrete storage/prefill implementations and the CMDT
  * record they're wired up through both live outside this package in
- * examples/fsc-estate-case-demo and are covered end to end by LqcFscExampleProvidersTest
- * there.
+ * examples/fsc-estate-case-demo and are covered end to end by the Lqc*Test classes
+ * there (LqcEstateCaseStorageTest in particular).
  * @author Ernesto S Melgin
  */
 @IsTest
@@ -24,7 +24,7 @@ private class LqcControllerTest {
    * LqcController.queryConfigJson) - it's created by the post-install script in a real
    * install, or by hand otherwise. This package's own suite exercises getConfig() through
    * configOverride instead of depending on a record actually existing; the real, deployed
-   * DE_LQC record is covered end to end by LqcFscExampleProvidersTest in examples/.
+   * DE_LQC record is covered end to end by LqcEstateCaseStorageTest in examples/.
    */
   @IsTest
   static void getConfigReturnsOverriddenJson() {

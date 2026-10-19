@@ -12,9 +12,12 @@
  * literally named Case__c, otherwise the single field that references Case), so this class
  * does not need to be edited if the lookup is named differently. Saving creates the Estate
  * Case when none exists yet.
+ *
+ * Declared global, not public: see LqcShares.cls for why LqcController.getSavedResult()/
+ * saveResult()'s dynamic Type.forName/newInstance dispatch requires it.
  * @author Ernesto S Melgin
  */
-public with sharing class LqcEstateCaseStorage implements absa1.ILqcStorage {
+global with sharing class LqcEstateCaseStorage implements absa1.ILqcStorage {
   @TestVisible
   private static final String PREFERRED_LOOKUP = 'Case__c';
 

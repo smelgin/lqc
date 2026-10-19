@@ -16,9 +16,12 @@
  * row-mapping. No DML here - persistence goes through ILqcStorage, which should use
  * fflib_ISObjectUnitOfWork when FFLIB lands.
  * ---------------------------------------------------------------------------
+ *
+ * Declared global, not public: see LqcShares.cls for why LqcController.refreshRows()'s
+ * dynamic Type.forName/newInstance dispatch requires it.
  * @author Ernesto S Melgin
  */
-public with sharing class LqcInsurancePolicies implements absa1.ILqcPrefill {
+global with sharing class LqcInsurancePolicies implements absa1.ILqcPrefill {
   @TestVisible
   private static final String BENEFICIARY_ROLE = 'Beneficiary';
 

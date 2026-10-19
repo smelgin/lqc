@@ -5,9 +5,12 @@
  *
  * @description PLACEHOLDER prefill provider for the "Other Assets" LQC tab. Replace the stub
  * rows with the real data source (SOQL / callout) when available.
+ *
+ * Declared global, not public: see LqcShares.cls for why LqcController.refreshRows()'s
+ * dynamic Type.forName/newInstance dispatch requires it.
  * @author Ernesto S Melgin
  */
-public with sharing class LqcOtherAssets implements absa1.ILqcPrefill {
+global with sharing class LqcOtherAssets implements absa1.ILqcPrefill {
   /**
    * @description Returns hardcoded placeholder rows until a real "other asset" data source
    * is wired up.

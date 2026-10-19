@@ -5,9 +5,12 @@
  *
  * @description PLACEHOLDER prefill provider for the "Fixed Properties" LQC tab (WinDeed).
  * Replace the stub rows with the real WinDeed extract when available.
+ *
+ * Declared global, not public: see LqcShares.cls for why LqcController.refreshRows()'s
+ * dynamic Type.forName/newInstance dispatch requires it.
  * @author Ernesto S Melgin
  */
-public with sharing class LqcFixedProperties implements absa1.ILqcPrefill {
+global with sharing class LqcFixedProperties implements absa1.ILqcPrefill {
   /**
    * @description Returns hardcoded placeholder rows until the WinDeed extract integration
    * is built.

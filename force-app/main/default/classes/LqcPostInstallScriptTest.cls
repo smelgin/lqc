@@ -7,7 +7,7 @@
  * called expecting it to throw, since Metadata.Operations.enqueueDeployment() is treated as
  * a callout that Apex tests can't actually perform - this still covers everything up to that
  * call. The full onInstall() flow against a real, deployed Custom_Configuration__mdt is
- * covered end to end by LqcFscExampleProvidersTest in examples/.
+ * covered end to end by LqcEstateCaseStorageTest in examples/.
  * @author Ernesto S Melgin
  */
 @IsTest

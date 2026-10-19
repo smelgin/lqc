@@ -24,7 +24,8 @@ force-app/main/default/        the managed package — no FSC or Estate_Case__c 
 examples/fsc-estate-case-demo/  reference implementation, NOT part of the package — see
                         examples/README.md
   classes/              LqcEstateCaseStorage, LqcFscService and the Lqc* prefill
-                        providers, LqcTestIds, LqcFscExampleProvidersTest
+                        providers, LqcTestIds/LqcFscTestData, and one Lqc*Test
+                        class per class above
   objects/
     Estate_Case__c/              minimal storage object the example writes to
 

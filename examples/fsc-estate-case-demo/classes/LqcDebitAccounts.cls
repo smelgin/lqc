@@ -12,9 +12,12 @@
  *
  * "Debit" = asset-side account types. Align ACCOUNT_TYPES with the FinancialAccount.Type
  * picklist values configured in your org.
+ *
+ * Declared global, not public: see LqcShares.cls for why LqcController.refreshRows()'s
+ * dynamic Type.forName/newInstance dispatch requires it.
  * @author Ernesto S Melgin
  */
-public with sharing class LqcDebitAccounts implements absa1.ILqcPrefill {
+global with sharing class LqcDebitAccounts implements absa1.ILqcPrefill {
   @TestVisible
   private static final Set<String> ACCOUNT_TYPES = new Set<String>{
     'Checking',
